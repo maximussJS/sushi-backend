@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"sushi-backend/cmd/build"
-	"sushi-backend/common/types"
 	"sushi-backend/pkg/http_server"
 	"sync"
 	"syscall"
@@ -27,7 +26,7 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	container = build.AppendDependenciesToContainer(container, []types.Dependency{
+	container = build.AppendDependenciesToContainer(container, []build.Dependency{
 		{
 			Constructor: func() context.Context {
 				return shutdownContext

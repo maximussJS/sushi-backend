@@ -2,7 +2,6 @@ package build
 
 import (
 	"go.uber.org/dig"
-	"sushi-backend/common/types"
 	"sushi-backend/internal/handlers"
 	handlers_interfaces "sushi-backend/internal/interfaces/handlers"
 	"sushi-backend/pkg/config"
@@ -19,7 +18,7 @@ func BuildContainer() *dig.Container {
 	return c
 }
 
-func AppendDependenciesToContainer(container *dig.Container, dependencies []types.Dependency) *dig.Container {
+func AppendDependenciesToContainer(container *dig.Container, dependencies []Dependency) *dig.Container {
 	for _, dep := range dependencies {
 		mustProvideDependency(container, dep)
 	}
@@ -27,7 +26,7 @@ func AppendDependenciesToContainer(container *dig.Container, dependencies []type
 	return container
 }
 
-func mustProvideDependency(container *dig.Container, dependency types.Dependency) {
+func mustProvideDependency(container *dig.Container, dependency Dependency) {
 	if dependency.Interface == nil {
 		err := container.Provide(dependency.Constructor, dig.Name(dependency.Token))
 
@@ -50,8 +49,8 @@ func mustProvideDependency(container *dig.Container, dependency types.Dependency
 }
 
 // GetInternalDependencies The list of internal dependencies that are required for the application to run.
-func getInternalDependencies() []types.Dependency {
-	return []types.Dependency{
+func getInternalDependencies() []Dependency {
+	return []Dependency{
 		{
 			Constructor: handlers.NewOrderHandler,
 			Interface:   new(handlers_interfaces.IOrderHandler),
@@ -61,8 +60,8 @@ func getInternalDependencies() []types.Dependency {
 }
 
 // getRequiredDependencies The list of dependencies that are required for the application to run.
-func getRequiredDependencies() []types.Dependency {
-	return []types.Dependency{
+func getRequiredDependencies() []Dependency {
+	return []Dependency{
 		{
 			Constructor: logger.NewLogger,
 			Interface:   new(logger.ILogger),

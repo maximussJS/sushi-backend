@@ -1,4 +1,4 @@
-package types
+package build
 
 type Dependency struct {
 	Constructor interface{}
