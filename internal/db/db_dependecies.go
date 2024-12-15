@@ -1,4 +1,4 @@
-package rate_limit
+package db
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"sushi-backend/pkg/logger"
 )
 
-type IpRateLimiterDependencies struct {
+type DbDependecies struct {
 	dig.In
 
 	ShutdownContext context.Context `name:"ShutdownContext"`

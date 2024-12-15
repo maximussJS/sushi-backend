@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"golang.org/x/time/rate"
-	"sushi-backend/pkg/config"
+	"sushi-backend/config"
 	"sushi-backend/pkg/logger"
 	"sync"
 	"time"
@@ -25,8 +25,8 @@ func NewIPRateLimiter(deps IpRateLimiterDependencies) *IPRateLimiter {
 		config: deps.Config,
 		ips:    make(map[string]*RateLimiter),
 		mu:     &sync.RWMutex{},
-		rate:   deps.Config.GetIpRateLimitRate(),
-		burst:  deps.Config.GetIpRateLimitBurst(),
+		rate:   deps.Config.IpRateLimitRate(),
+		burst:  deps.Config.IpRateLimitBurst(),
 	}
 
 	r.logger.Log(
@@ -34,8 +34,8 @@ func NewIPRateLimiter(deps IpRateLimiterDependencies) *IPRateLimiter {
 			"IPRateLimiter created with rate %d and burst %d, cleanup interval %s, IP expiration %s",
 			r.rate,
 			r.burst,
-			deps.Config.GetIpRateLimitCleanupInterval(),
-			deps.Config.GetIpRateLimitExpiration(),
+			deps.Config.IpRateLimitCleanupInterval(),
+			deps.Config.IpRateLimitExpiration(),
 		),
 	)
 
@@ -79,7 +79,7 @@ func (i *IPRateLimiter) GetActiveIpsCount() int {
 }
 
 func (i *IPRateLimiter) cleanup(ctx context.Context) {
-	ticker := time.NewTicker(i.config.GetIpRateLimitCleanupInterval())
+	ticker := time.NewTicker(i.config.IpRateLimitCleanupInterval())
 	defer ticker.Stop()
 
 	for {
@@ -96,7 +96,7 @@ func (i *IPRateLimiter) cleanup(ctx context.Context) {
 			i.mu.Lock()
 			i.logger.Debug(fmt.Sprintf("Running Ip rate limit cleanup, total IPs size %d", len(i.ips)))
 			for ip, limiter := range i.ips {
-				if limiter.IsExpired(i.config.GetIpRateLimitExpiration()) {
+				if limiter.IsExpired(i.config.IpRateLimitExpiration()) {
 					i.logger.Debug(fmt.Sprintf("Deleting expired IP %s from the map", ip))
 					delete(i.ips, ip)
 				}
