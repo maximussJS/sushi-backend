@@ -58,6 +58,14 @@ func (c *Cloudinary) Upload(ctx context.Context, file multipart.File, header *mu
 	return resp.PublicID, resp.SecureURL
 }
 
+func (c *Cloudinary) Delete(ctx context.Context, publicId string) {
+	utils.PanicIfErrorWithResult(c.cld.Upload.Destroy(ctx, uploader.DestroyParams{
+		PublicID: publicId,
+	}))
+
+	c.logger.Debug(fmt.Sprintf("Deleted file from cloudinary: public id %s", publicId))
+}
+
 func (c *Cloudinary) generateKey(filename string) string {
 	return c.config.CloudinaryFolder() + "/" + filename + "-" + utils.NewUUID()
 }

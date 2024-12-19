@@ -74,6 +74,8 @@ func (p *ProductImageService) DeleteById(id string) *responses.Response {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Product image with id %s not found", id))
 	}
 
+	p.cloudinary.Delete(context.Background(), image.CloudinaryPublicId)
+
 	err = p.imageRepository.DeleteById(id)
 	if err != nil {
 		return responses.NewInternalServerErrorResponse(err.Error())

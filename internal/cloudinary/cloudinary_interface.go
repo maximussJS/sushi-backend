@@ -7,4 +7,5 @@ import (
 
 type ICloudinary interface {
 	Upload(ctx context.Context, file multipart.File, handler *multipart.FileHeader) (publicId, secureURL string)
+	Delete(ctx context.Context, publicId string)
 }
