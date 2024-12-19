@@ -5,7 +5,9 @@ import (
 	"sushi-backend/config"
 	"sushi-backend/controllers"
 	controllers_interfaces "sushi-backend/controllers/interfaces"
+	"sushi-backend/internal/cloudinary"
 	"sushi-backend/internal/db"
+	"sushi-backend/internal/tmp_file_storage"
 	"sushi-backend/pkg/logger"
 	"sushi-backend/pkg/rate_limit"
 	"sushi-backend/repositories"
@@ -13,6 +15,7 @@ import (
 	"sushi-backend/router"
 	"sushi-backend/services"
 	services_interfaces "sushi-backend/services/interfaces"
+	"sushi-backend/utils"
 )
 
 func BuildContainer() *dig.Container {
@@ -34,29 +37,25 @@ func AppendDependenciesToContainer(container *dig.Container, dependencies []Depe
 
 func mustProvideDependency(container *dig.Container, dependency Dependency) {
 	if dependency.Interface == nil {
-		err := container.Provide(dependency.Constructor, dig.Name(dependency.Token))
-
-		if err != nil {
-			panic(err)
-		}
-
+		utils.PanicIfError(container.Provide(dependency.Constructor, dig.Name(dependency.Token)))
 		return
 	}
 
-	err := container.Provide(
+	utils.PanicIfError(container.Provide(
 		dependency.Constructor,
 		dig.As(dependency.Interface),
 		dig.Name(dependency.Token),
-	)
-
-	if err != nil {
-		panic(err)
-	}
+	))
 }
 
 // GetInternalDependencies The list of internal dependencies that are required for the application to run.
 func getInternalDependencies() []Dependency {
 	return []Dependency{
+		{
+			Constructor: repositories.NewProductImageRepository,
+			Interface:   new(repositories_interfaces.IProductImageRepository),
+			Token:       "ProductImageRepository",
+		},
 		{
 			Constructor: repositories.NewProductRepository,
 			Interface:   new(repositories_interfaces.IProductRepository),
@@ -66,6 +65,11 @@ func getInternalDependencies() []Dependency {
 			Constructor: repositories.NewCategoryRepository,
 			Interface:   new(repositories_interfaces.ICategoryRepository),
 			Token:       "CategoryRepository",
+		},
+		{
+			Constructor: services.NewProductImageService,
+			Interface:   new(services_interfaces.IProductImageService),
+			Token:       "ProductImageService",
 		},
 		{
 			Constructor: services.NewProductService,
@@ -93,6 +97,11 @@ func getInternalDependencies() []Dependency {
 			Token:       "ProductController",
 		},
 		{
+			Constructor: controllers.NewProductImageController,
+			Interface:   new(controllers_interfaces.IProductImageController),
+			Token:       "ProductImageController",
+		},
+		{
 			Constructor: router.NewRouter,
 			Interface:   nil,
 			Token:       "Router",
@@ -117,6 +126,16 @@ func getRequiredDependencies() []Dependency {
 			Constructor: rate_limit.NewIPRateLimiter,
 			Interface:   new(rate_limit.IIpRateLimiter),
 			Token:       "IpRateLimiter",
+		},
+		{
+			Constructor: tmp_file_storage.NewTmpFileStorage,
+			Interface:   new(tmp_file_storage.ITmpFileStorage),
+			Token:       "TmpFileStorage",
+		},
+		{
+			Constructor: cloudinary.NewCloudinary,
+			Interface:   new(cloudinary.ICloudinary),
+			Token:       "Cloudinary",
 		},
 		{
 			Constructor: db.NewDB,

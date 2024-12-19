@@ -13,6 +13,8 @@ type Config struct {
 	logger                         logger.ILogger
 	httpPort                       string
 	postgresDSN                    string
+	cloudinaryUrl                  string
+	cloudinaryFolder               string
 	runMigration                   bool
 	ipRateLimitRate                int
 	ipRateLimitBurst               int
@@ -32,6 +34,8 @@ func NewConfig(deps ConfigDependencies) *Config {
 	}
 
 	config.postgresDSN = config.getRequiredString("POSTGRES_DSN")
+	config.cloudinaryUrl = config.getRequiredString("CLOUDINARY_URL")
+	config.cloudinaryFolder = config.getOptionalString("CLOUDINARY_FOLDER", "sushi")
 	config.runMigration = config.getOptionalBool("RUN_MIGRATION", true)
 	config.httpPort = config.getOptionalString("HTTP_PORT", ":8080")
 	config.ipRateLimitRate = config.getOptionalInt("IP_RATE_LIMIT_RATE", 60)
@@ -44,6 +48,14 @@ func NewConfig(deps ConfigDependencies) *Config {
 
 func (c *Config) PostgresDSN() string {
 	return c.postgresDSN
+}
+
+func (c *Config) CloudinaryUrl() string {
+	return c.cloudinaryUrl
+}
+
+func (c *Config) CloudinaryFolder() string {
+	return c.cloudinaryFolder
 }
 
 func (c *Config) RunMigration() bool {

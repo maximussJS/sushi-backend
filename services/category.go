@@ -68,3 +68,49 @@ func (c *CategoryService) Create(request requests.CreateCategoryRequest) *respon
 
 	return responses.NewSuccessResponse(newCategory)
 }
+
+func (c *CategoryService) UpdateById(id string, request requests.UpdateCategoryRequest) *responses.Response {
+	category, err := c.categoryRepository.FindById(id)
+
+	if err != nil {
+		return responses.NewInternalServerErrorResponse(err.Error())
+	}
+
+	if category == nil {
+		return responses.NewNotFoundResponse(fmt.Sprintf("Category with id %s not found", id))
+	}
+
+	err = c.categoryRepository.UpdateById(id, request.ToCategoryModel())
+
+	if err != nil {
+		return responses.NewInternalServerErrorResponse(err.Error())
+	}
+
+	updatedCategory, err := c.categoryRepository.FindById(id)
+
+	if err != nil {
+		return responses.NewInternalServerErrorResponse(err.Error())
+	}
+
+	return responses.NewSuccessResponse(updatedCategory)
+}
+
+func (c *CategoryService) DeleteById(id string) *responses.Response {
+	category, err := c.categoryRepository.FindById(id)
+
+	if err != nil {
+		return responses.NewInternalServerErrorResponse(err.Error())
+	}
+
+	if category == nil {
+		return responses.NewNotFoundResponse(fmt.Sprintf("Category with id %s not found", id))
+	}
+
+	err = c.categoryRepository.DeleteById(id)
+
+	if err != nil {
+		return responses.NewInternalServerErrorResponse(err.Error())
+	}
+
+	return responses.NewSuccessResponse(nil)
+}

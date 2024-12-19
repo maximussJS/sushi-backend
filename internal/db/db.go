@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func NewDB(deps DbDependecies) *gorm.DB {
+func NewDB(deps DbDependencies) *gorm.DB {
 	dsn := deps.Config.PostgresDSN()
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),

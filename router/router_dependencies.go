@@ -11,10 +11,11 @@ import (
 type RouterDependencies struct {
 	dig.In
 
-	Logger             logger.ILogger                 `name:"Logger"`
-	Config             config.IConfig                 `name:"Config"`
-	OrderController    interfaces.IOrderController    `name:"OrderController"`
-	CategoryController interfaces.ICategoryController `name:"CategoryController"`
-	ProductController  interfaces.IProductController  `name:"ProductController"`
-	IPRateLimiter      rate_limit.IIpRateLimiter      `name:"IpRateLimiter"`
+	Logger                 logger.ILogger                     `name:"Logger"`
+	Config                 config.IConfig                     `name:"Config"`
+	OrderController        interfaces.IOrderController        `name:"OrderController"`
+	CategoryController     interfaces.ICategoryController     `name:"CategoryController"`
+	ProductController      interfaces.IProductController      `name:"ProductController"`
+	ProductImageController interfaces.IProductImageController `name:"ProductImageController"`
+	IPRateLimiter          rate_limit.IIpRateLimiter          `name:"IpRateLimiter"`
 }

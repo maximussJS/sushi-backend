@@ -8,5 +8,6 @@ import (
 type ProductServiceDependencies struct {
 	dig.In
 
-	ProductRepository interfaces.IProductRepository `name:"ProductRepository"`
+	ProductRepository  interfaces.IProductRepository  `name:"ProductRepository"`
+	CategoryRepository interfaces.ICategoryRepository `name:"CategoryRepository"`
 }

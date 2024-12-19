@@ -16,51 +16,61 @@ import (
 )
 
 type Router struct {
-	router             *mux.Router
-	logger             logger.ILogger
-	config             config.IConfig
-	ipRateLimiter      rate_limit.IIpRateLimiter
-	orderController    interfaces.IOrderController
-	categoryController interfaces.ICategoryController
-	productController  interfaces.IProductController
+	router                 *mux.Router
+	logger                 logger.ILogger
+	config                 config.IConfig
+	ipRateLimiter          rate_limit.IIpRateLimiter
+	orderController        interfaces.IOrderController
+	categoryController     interfaces.ICategoryController
+	productController      interfaces.IProductController
+	productImageController interfaces.IProductImageController
 }
 
 func NewRouter(deps RouterDependencies) *Router {
 	r := &Router{
-		router:             mux.NewRouter(),
-		logger:             deps.Logger,
-		config:             deps.Config,
-		ipRateLimiter:      deps.IPRateLimiter,
-		orderController:    deps.OrderController,
-		categoryController: deps.CategoryController,
-		productController:  deps.ProductController,
+		router:                 mux.NewRouter(),
+		logger:                 deps.Logger,
+		config:                 deps.Config,
+		ipRateLimiter:          deps.IPRateLimiter,
+		orderController:        deps.OrderController,
+		categoryController:     deps.CategoryController,
+		productController:      deps.ProductController,
+		productImageController: deps.ProductImageController,
 	}
 
 	orderRouter := r.router.PathPrefix("/api/v1/orders").Subrouter()
 
-	orderRouter.HandleFunc("/", r.wrapResponse(r.orderController.CreateOrder)).Methods("POST")
+	orderRouter.HandleFunc("", r.wrapResponse(r.orderController.CreateOrder)).Methods("POST")
 
-	orderRouter.Use(r.IPMiddleware)
-	orderRouter.Use(r.logMiddleware)
-	orderRouter.Use(r.limitMiddleware)
+	r.addDefaultMiddlewares(orderRouter)
 
 	categoryRouter := r.router.PathPrefix("/api/v1/categories").Subrouter()
 
-	categoryRouter.HandleFunc("/", r.wrapResponse(r.categoryController.GetAll)).Methods("GET")
+	categoryRouter.HandleFunc("", r.wrapResponse(r.categoryController.GetAll)).Methods("GET")
+	categoryRouter.HandleFunc("", r.wrapResponse(r.categoryController.Create)).Methods("POST")
+	categoryRouter.HandleFunc("/{id}", r.wrapResponse(r.categoryController.DeleteById)).Methods("DELETE")
 	categoryRouter.HandleFunc("/{id}", r.wrapResponse(r.categoryController.GetById)).Methods("GET")
-	categoryRouter.HandleFunc("/", r.wrapResponse(r.categoryController.Create)).Methods("POST")
+	categoryRouter.HandleFunc("/{id}", r.wrapResponse(r.categoryController.UpdateById)).Methods("PATCH")
 
-	orderRouter.Use(r.IPMiddleware)
-	orderRouter.Use(r.logMiddleware)
-	orderRouter.Use(r.limitMiddleware)
+	r.addDefaultMiddlewares(categoryRouter)
 
 	productRouter := r.router.PathPrefix("/api/v1/products").Subrouter()
 
-	productRouter.HandleFunc("/", r.wrapResponse(r.productController.GetAll)).Methods("GET")
+	productRouter.HandleFunc("", r.wrapResponse(r.productController.GetAll)).Methods("GET")
+	productRouter.HandleFunc("", r.wrapResponse(r.productController.Create)).Methods("POST")
+	productRouter.HandleFunc("/{id}", r.wrapResponse(r.productController.DeleteById)).Methods("DELETE")
+	productRouter.HandleFunc("/{id}", r.wrapResponse(r.productController.GetById)).Methods("GET")
+	productRouter.HandleFunc("/{id}", r.wrapResponse(r.productController.UpdateById)).Methods("PATCH")
 
-	productRouter.Use(r.IPMiddleware)
-	productRouter.Use(r.logMiddleware)
-	productRouter.Use(r.limitMiddleware)
+	r.addDefaultMiddlewares(productRouter)
+
+	productImageRouter := r.router.PathPrefix("/api/v1/product-images").Subrouter()
+
+	productImageRouter.HandleFunc("/{id}", r.wrapResponse(r.productImageController.Create)).Methods("POST")
+	productImageRouter.HandleFunc("/{id}", r.wrapResponse(r.productImageController.DeleteById)).Methods("DELETE")
+	productImageRouter.HandleFunc("/{id}", r.wrapResponse(r.productImageController.GetById)).Methods("GET")
+
+	r.addDefaultMiddlewares(productImageRouter)
 
 	return r
 }
@@ -104,7 +114,7 @@ func (router *Router) logMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (router *Router) IPMiddleware(next http.Handler) http.Handler {
+func (router *Router) iPMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		clientIP := r.RemoteAddr
 		if ip, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
@@ -117,6 +127,12 @@ func (router *Router) IPMiddleware(next http.Handler) http.Handler {
 
 func (router *Router) GetRouter() *mux.Router {
 	return router.router
+}
+
+func (router *Router) addDefaultMiddlewares(r *mux.Router) {
+	r.Use(router.iPMiddleware)
+	r.Use(router.limitMiddleware)
+	r.Use(router.logMiddleware)
 }
 
 type wrappedFn func(w http.ResponseWriter, r *http.Request) *responses.Response
@@ -135,6 +151,11 @@ func (router *Router) wrapResponse(fn wrappedFn) func(w http.ResponseWriter, r *
 		if resp.IsError() {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(resp.Status)
+
+			if resp.Status == http.StatusInternalServerError {
+				router.logger.Error(resp.Error.Error())
+			}
+
 			utils.PanicIfErrorWithResult(w.Write([]byte(fmt.Sprintf(`{"message": "%s"}`, resp.Msg))))
 			return
 		}

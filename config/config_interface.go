@@ -7,6 +7,9 @@ import (
 type IConfig interface {
 	HttpPort() string
 
+	CloudinaryUrl() string
+	CloudinaryFolder() string
+
 	PostgresDSN() string
 
 	RunMigration() bool

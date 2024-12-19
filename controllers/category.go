@@ -58,3 +58,29 @@ func (h *CategoryController) GetById(_ http.ResponseWriter, r *http.Request) *re
 
 	return h.categoryService.GetById(id)
 }
+
+func (h *CategoryController) UpdateById(w http.ResponseWriter, r *http.Request) *responses.Response {
+	id, err := utils.GetIdParam(r)
+
+	if err != nil {
+		return err
+	}
+
+	var req requests.UpdateCategoryRequest
+
+	if err := utils.DecodeJSONBody(w, r, &req); err != nil {
+		return err
+	}
+
+	return h.categoryService.UpdateById(id, req)
+}
+
+func (h *CategoryController) DeleteById(_ http.ResponseWriter, r *http.Request) *responses.Response {
+	id, err := utils.GetIdParam(r)
+
+	if err != nil {
+		return err
+	}
+
+	return h.categoryService.DeleteById(id)
+}

@@ -7,7 +7,7 @@ import (
 	"sushi-backend/pkg/logger"
 )
 
-type DbDependecies struct {
+type DbDependencies struct {
 	dig.In
 
 	ShutdownContext context.Context `name:"ShutdownContext"`

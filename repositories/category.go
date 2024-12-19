@@ -33,7 +33,7 @@ func (r *CategoryRepository) Create(category models.CategoryModel) (string, erro
 
 func (r *CategoryRepository) GetAll(limit, offset int) ([]models.CategoryModel, error) {
 	var categories []models.CategoryModel
-	err := r.db.Limit(limit).Offset(offset).Find(&categories).Error
+	err := r.db.Limit(limit).Offset(offset).Preload("Products.Images").Find(&categories).Error
 	if err != nil {
 		return nil, err
 	}
@@ -44,14 +44,22 @@ func (r *CategoryRepository) GetAll(limit, offset int) ([]models.CategoryModel, 
 func (r *CategoryRepository) FindByName(name string) (*models.CategoryModel, error) {
 	var category models.CategoryModel
 
-	err := r.db.Where("name = ?", name).First(&category).Error
+	err := r.db.Where("name = ?", name).Preload("Products.Images").First(&category).Error
 
 	return utils.HandleRecordNotFound[*models.CategoryModel](&category, err)
 }
 
 func (r *CategoryRepository) FindById(id string) (*models.CategoryModel, error) {
 	var category models.CategoryModel
-	err := r.db.Clauses(clause.Returning{}).Where("id = ?", id).First(&category).Error
+	err := r.db.Clauses(clause.Returning{}).Preload("Products.Images").Where("id = ?", id).First(&category).Error
 
 	return utils.HandleRecordNotFound[*models.CategoryModel](&category, err)
+}
+
+func (r *CategoryRepository) UpdateById(id string, category models.CategoryModel) error {
+	return r.db.Model(&models.CategoryModel{}).Where("id = ?", id).Updates(&category).Error
+}
+
+func (r *CategoryRepository) DeleteById(id string) error {
+	return r.db.Where("id = ?", id).Delete(&models.CategoryModel{}).Error
 }

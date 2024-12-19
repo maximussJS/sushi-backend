@@ -32,6 +32,14 @@ func NewUnsupportedMethodResponse() *Response {
 	}
 }
 
+func NewContentTooLargeResponse() *Response {
+	return &Response{
+		Status: http.StatusRequestEntityTooLarge,
+		Msg:    "Request entity too large",
+		Error:  errors.New("Request entity too large"),
+	}
+}
+
 func NewBadRequestResponse(msg string) *Response {
 	return &Response{
 		Status: http.StatusBadRequest,
@@ -43,7 +51,7 @@ func NewBadRequestResponse(msg string) *Response {
 func NewInternalServerErrorResponse(msg string) *Response {
 	return &Response{
 		Status: http.StatusInternalServerError,
-		Msg:    msg,
+		Msg:    "Internal server error",
 		Error:  errors.New(msg),
 	}
 }
