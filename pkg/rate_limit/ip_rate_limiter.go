@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"golang.org/x/time/rate"
 	"sushi-backend/config"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 	"sync"
 	"time"
 )

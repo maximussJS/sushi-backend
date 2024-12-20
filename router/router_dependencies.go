@@ -4,7 +4,7 @@ import (
 	"go.uber.org/dig"
 	"sushi-backend/config"
 	"sushi-backend/controllers/interfaces"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 	"sushi-backend/pkg/rate_limit"
 )
 

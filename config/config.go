@@ -5,7 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"os"
 	"strconv"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 	"time"
 )
 
@@ -15,6 +15,8 @@ type Config struct {
 	postgresDSN                    string
 	cloudinaryUrl                  string
 	cloudinaryFolder               string
+	telegramBotToken               string
+	telegramOrdersChatId           string
 	runMigration                   bool
 	ipRateLimitRate                int
 	ipRateLimitBurst               int
@@ -34,6 +36,8 @@ func NewConfig(deps ConfigDependencies) *Config {
 	}
 
 	config.postgresDSN = config.getRequiredString("POSTGRES_DSN")
+	config.telegramBotToken = config.getRequiredString("TELEGRAM_BOT_TOKEN")
+	config.telegramOrdersChatId = config.getRequiredString("TELEGRAM_ORDERS_CHAT_ID")
 	config.cloudinaryUrl = config.getRequiredString("CLOUDINARY_URL")
 	config.cloudinaryFolder = config.getOptionalString("CLOUDINARY_FOLDER", "sushi")
 	config.runMigration = config.getOptionalBool("RUN_MIGRATION", true)
@@ -48,6 +52,14 @@ func NewConfig(deps ConfigDependencies) *Config {
 
 func (c *Config) PostgresDSN() string {
 	return c.postgresDSN
+}
+
+func (c *Config) TelegramBotToken() string {
+	return c.telegramBotToken
+}
+
+func (c *Config) TelegramOrdersChatId() string {
+	return c.telegramOrdersChatId
 }
 
 func (c *Config) CloudinaryUrl() string {

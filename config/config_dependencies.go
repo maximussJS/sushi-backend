@@ -2,7 +2,7 @@ package config
 
 import (
 	"go.uber.org/dig"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 )
 
 type ConfigDependencies struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"go.uber.org/dig"
 	"sushi-backend/config"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 )
 
 type DbDependencies struct {

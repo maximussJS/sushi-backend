@@ -7,8 +7,9 @@ import (
 	controllers_interfaces "sushi-backend/controllers/interfaces"
 	"sushi-backend/internal/cloudinary"
 	"sushi-backend/internal/db"
+	logger2 "sushi-backend/internal/logger"
+	"sushi-backend/internal/telegram"
 	"sushi-backend/internal/tmp_file_storage"
-	"sushi-backend/pkg/logger"
 	"sushi-backend/pkg/rate_limit"
 	"sushi-backend/repositories"
 	repositories_interfaces "sushi-backend/repositories/interfaces"
@@ -82,6 +83,11 @@ func getInternalDependencies() []Dependency {
 			Token:       "CategoryService",
 		},
 		{
+			Constructor: services.NewOrderService,
+			Interface:   new(services_interfaces.IOrderService),
+			Token:       "OrderService",
+		},
+		{
 			Constructor: controllers.NewOrderController,
 			Interface:   new(controllers_interfaces.IOrderController),
 			Token:       "OrderController",
@@ -113,8 +119,8 @@ func getInternalDependencies() []Dependency {
 func getRequiredDependencies() []Dependency {
 	return []Dependency{
 		{
-			Constructor: logger.NewLogger,
-			Interface:   new(logger.ILogger),
+			Constructor: logger2.NewLogger,
+			Interface:   new(logger2.ILogger),
 			Token:       "Logger",
 		},
 		{
@@ -136,6 +142,11 @@ func getRequiredDependencies() []Dependency {
 			Constructor: cloudinary.NewCloudinary,
 			Interface:   new(cloudinary.ICloudinary),
 			Token:       "Cloudinary",
+		},
+		{
+			Constructor: telegram.NewTelegram,
+			Interface:   new(telegram.ITelegram),
+			Token:       "Telegram",
 		},
 		{
 			Constructor: db.NewDB,

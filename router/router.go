@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sushi-backend/config"
 	"sushi-backend/controllers/interfaces"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 	"sushi-backend/pkg/rate_limit"
 	"sushi-backend/types/responses"
 	"sushi-backend/utils"

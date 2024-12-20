@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 	"sushi-backend/controllers/dependencies"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 	"sushi-backend/services/interfaces"
 	"sushi-backend/types/responses"
 	"sushi-backend/utils"

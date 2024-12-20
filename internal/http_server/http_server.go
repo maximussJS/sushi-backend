@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sushi-backend/config"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 	"sushi-backend/router"
 	"time"
 )

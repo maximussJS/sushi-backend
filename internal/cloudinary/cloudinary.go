@@ -8,8 +8,8 @@ import (
 	"mime/multipart"
 	"path/filepath"
 	"sushi-backend/config"
+	"sushi-backend/internal/logger"
 	"sushi-backend/internal/tmp_file_storage"
-	"sushi-backend/pkg/logger"
 	"sushi-backend/utils"
 )
 

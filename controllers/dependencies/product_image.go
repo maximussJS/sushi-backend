@@ -2,7 +2,7 @@ package dependencies
 
 import (
 	"go.uber.org/dig"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 	"sushi-backend/services/interfaces"
 )
 

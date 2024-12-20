@@ -7,6 +7,9 @@ import (
 type IConfig interface {
 	HttpPort() string
 
+	TelegramBotToken() string
+	TelegramOrdersChatId() string
+
 	CloudinaryUrl() string
 	CloudinaryFolder() string
 

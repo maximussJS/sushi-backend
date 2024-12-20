@@ -4,8 +4,8 @@ import (
 	"context"
 	"go.uber.org/dig"
 	"sushi-backend/config"
+	"sushi-backend/internal/logger"
 	"sushi-backend/internal/tmp_file_storage"
-	"sushi-backend/pkg/logger"
 )
 
 type CloudinaryDependencies struct {

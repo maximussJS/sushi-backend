@@ -5,7 +5,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
-	"sushi-backend/pkg/logger"
+	"sushi-backend/internal/logger"
 	"sushi-backend/utils"
 )
 
