@@ -25,3 +25,8 @@ func (c *CategoryModel) BeforeCreate(tx *gorm.DB) (err error) {
 	c.UpdatedAt = time.Now()
 	return
 }
+
+func (c *CategoryModel) BeforeUpdate(tx *gorm.DB) (err error) {
+	c.UpdatedAt = time.Now()
+	return
+}

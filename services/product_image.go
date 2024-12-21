@@ -9,6 +9,7 @@ import (
 	"sushi-backend/repositories/interfaces"
 	"sushi-backend/services/dependecies"
 	"sushi-backend/types/responses"
+	"sushi-backend/utils"
 )
 
 type ProductImageService struct {
@@ -26,10 +27,7 @@ func NewProductImageService(deps dependencies.ProductImageServiceDependencies) *
 }
 
 func (p *ProductImageService) GetById(id string) *responses.Response {
-	product, err := p.imageRepository.FindById(id)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	product := utils.PanicIfErrorWithResultReturning(p.imageRepository.GetById(id))
 
 	if product == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Product with id %s not found", id))
@@ -46,29 +44,19 @@ func (p *ProductImageService) Create(productId string, file multipart.File, head
 	ctx := context.Background()
 	publicId, secureUrl := p.cloudinary.Upload(ctx, file, header)
 
-	imageId, err := p.imageRepository.Create(models.ProductImageModel{
+	imageId := utils.PanicIfErrorWithResultReturning(p.imageRepository.Create(models.ProductImageModel{
 		ProductId:          productId,
 		CloudinaryPublicId: publicId,
 		Url:                secureUrl,
-	})
+	}))
 
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
-
-	newImage, err := p.imageRepository.FindById(imageId)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	newImage := utils.PanicIfErrorWithResultReturning(p.imageRepository.GetById(imageId))
 
 	return responses.NewSuccessResponse(newImage)
 }
 
 func (p *ProductImageService) DeleteById(id string) *responses.Response {
-	image, err := p.imageRepository.FindById(id)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	image := utils.PanicIfErrorWithResultReturning(p.imageRepository.GetById(id))
 
 	if image == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Product image with id %s not found", id))
@@ -76,20 +64,13 @@ func (p *ProductImageService) DeleteById(id string) *responses.Response {
 
 	p.cloudinary.Delete(context.Background(), image.CloudinaryPublicId)
 
-	err = p.imageRepository.DeleteById(id)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	utils.PanicIfError(p.imageRepository.DeleteById(id))
 
 	return responses.NewSuccessResponse(nil)
 }
 
 func (p *ProductImageService) isValidProductId(productId string) *responses.Response {
-	product, err := p.productRepository.FindById(productId)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	product := utils.PanicIfErrorWithResultReturning(p.productRepository.GetById(productId))
 
 	if product == nil {
 		return responses.NewBadRequestResponse(fmt.Sprintf("Product with id %s not found", productId))

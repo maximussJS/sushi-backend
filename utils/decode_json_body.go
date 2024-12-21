@@ -59,7 +59,7 @@ func DecodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) *re
 			return responses.NewBadRequestResponse(msg)
 
 		default:
-			return responses.NewInternalServerErrorResponse(err.Error())
+			panic(err)
 		}
 	}
 

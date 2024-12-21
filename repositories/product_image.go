@@ -31,7 +31,7 @@ func (r *ProductImageRepository) Create(image models.ProductImageModel) (string,
 	return image.Id, nil
 }
 
-func (r *ProductImageRepository) FindById(id string) (*models.ProductImageModel, error) {
+func (r *ProductImageRepository) GetById(id string) (*models.ProductImageModel, error) {
 	var image models.ProductImageModel
 	err := r.db.Clauses(clause.Returning{}).Where("id = ?", id).First(&image).Error
 

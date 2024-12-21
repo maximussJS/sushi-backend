@@ -6,6 +6,7 @@ import (
 	"sushi-backend/services/dependecies"
 	"sushi-backend/types/requests"
 	"sushi-backend/types/responses"
+	"sushi-backend/utils"
 )
 
 type ProductService struct {
@@ -21,19 +22,13 @@ func NewProductService(deps dependencies.ProductServiceDependencies) *ProductSer
 }
 
 func (p *ProductService) GetAll(limit, offset int) *responses.Response {
-	products, err := p.productRepository.GetAll(limit, offset)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	products := utils.PanicIfErrorWithResultReturning(p.productRepository.GetAll(limit, offset))
 
 	return responses.NewSuccessResponse(products)
 }
 
 func (p *ProductService) GetById(id string) *responses.Response {
-	product, err := p.productRepository.FindById(id)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	product := utils.PanicIfErrorWithResultReturning(p.productRepository.GetById(id))
 
 	if product == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Product with id %s not found", id))
@@ -47,34 +42,22 @@ func (p *ProductService) Create(request requests.CreateProductRequest) *response
 		return err
 	}
 
-	existingProduct, err := p.productRepository.FindByName(request.Name)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	existingProduct := utils.PanicIfErrorWithResultReturning(p.productRepository.GetByName(request.Name))
 
 	if existingProduct != nil {
 		msg := fmt.Sprintf("Product with name %s already exists", request.Name)
 		return responses.NewBadRequestResponse(msg)
 	}
 
-	productId, err := p.productRepository.Create(request.ToProductModel())
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	productId := utils.PanicIfErrorWithResultReturning(p.productRepository.Create(request.ToProductModel()))
 
-	newProduct, err := p.productRepository.FindById(productId)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	newProduct := utils.PanicIfErrorWithResultReturning(p.productRepository.GetById(productId))
 
 	return responses.NewSuccessResponse(newProduct)
 }
 
 func (p *ProductService) UpdateById(id string, request requests.UpdateProductRequest) *responses.Response {
-	product, err := p.productRepository.FindById(id)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	product := utils.PanicIfErrorWithResultReturning(p.productRepository.GetById(id))
 
 	if product == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Product with id %s not found", id))
@@ -86,43 +69,27 @@ func (p *ProductService) UpdateById(id string, request requests.UpdateProductReq
 		}
 	}
 
-	err = p.productRepository.UpdateById(id, request.ToProductModel())
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	utils.PanicIfError(p.productRepository.UpdateById(id, request.ToProductModel()))
 
-	updatedProduct, err := p.productRepository.FindById(id)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	updatedProduct := utils.PanicIfErrorWithResultReturning(p.productRepository.GetById(id))
 
 	return responses.NewSuccessResponse(updatedProduct)
 }
 
 func (p *ProductService) DeleteById(id string) *responses.Response {
-	product, err := p.productRepository.FindById(id)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	product := utils.PanicIfErrorWithResultReturning(p.productRepository.GetById(id))
 
 	if product == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Product with id %s not found", id))
 	}
 
-	err = p.productRepository.DeleteById(id)
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	utils.PanicIfError(p.productRepository.DeleteById(id))
 
 	return responses.NewSuccessResponse(nil)
 }
 
 func (p *ProductService) isValidCategoryId(categoryId string) *responses.Response {
-	category, err := p.categoryRepository.FindById(categoryId)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	category := utils.PanicIfErrorWithResultReturning(p.categoryRepository.GetById(categoryId))
 
 	if category == nil {
 		return responses.NewBadRequestResponse(fmt.Sprintf("Category with id %s not found", categoryId))

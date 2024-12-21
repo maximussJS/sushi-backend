@@ -6,6 +6,7 @@ import (
 	"sushi-backend/services/dependecies"
 	"sushi-backend/types/requests"
 	"sushi-backend/types/responses"
+	"sushi-backend/utils"
 )
 
 type CategoryService struct {
@@ -19,21 +20,13 @@ func NewCategoryService(deps dependencies.CategoryServiceDependencies) *Category
 }
 
 func (c *CategoryService) GetAll(limit, offset int) *responses.Response {
-	categories, err := c.categoryRepository.GetAll(limit, offset)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	categories := utils.PanicIfErrorWithResultReturning(c.categoryRepository.GetAll(limit, offset))
 
 	return responses.NewSuccessResponse(categories)
 }
 
 func (c *CategoryService) GetById(id string) *responses.Response {
-	category, err := c.categoryRepository.FindById(id)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	category := utils.PanicIfErrorWithResultReturning(c.categoryRepository.GetById(id))
 
 	if category == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Category with id %s not found", id))
@@ -43,74 +36,42 @@ func (c *CategoryService) GetById(id string) *responses.Response {
 }
 
 func (c *CategoryService) Create(request requests.CreateCategoryRequest) *responses.Response {
-	existingCategory, err := c.categoryRepository.FindByName(request.Name)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	existingCategory := utils.PanicIfErrorWithResultReturning(c.categoryRepository.GetByName(request.Name))
 
 	if existingCategory != nil {
 		msg := fmt.Sprintf("Category with name %s already exists", request.Name)
 		return responses.NewBadRequestResponse(msg)
 	}
 
-	categoryId, err := c.categoryRepository.Create(request.ToCategoryModel())
+	categoryId := utils.PanicIfErrorWithResultReturning(c.categoryRepository.Create(request.ToCategoryModel()))
 
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
-
-	newCategory, err := c.categoryRepository.FindById(categoryId)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	newCategory := utils.PanicIfErrorWithResultReturning(c.categoryRepository.GetById(categoryId))
 
 	return responses.NewSuccessResponse(newCategory)
 }
 
 func (c *CategoryService) UpdateById(id string, request requests.UpdateCategoryRequest) *responses.Response {
-	category, err := c.categoryRepository.FindById(id)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	category := utils.PanicIfErrorWithResultReturning(c.categoryRepository.GetById(id))
 
 	if category == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Category with id %s not found", id))
 	}
 
-	err = c.categoryRepository.UpdateById(id, request.ToCategoryModel())
+	utils.PanicIfError(c.categoryRepository.UpdateById(id, request.ToCategoryModel()))
 
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
-
-	updatedCategory, err := c.categoryRepository.FindById(id)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	updatedCategory := utils.PanicIfErrorWithResultReturning(c.categoryRepository.GetById(id))
 
 	return responses.NewSuccessResponse(updatedCategory)
 }
 
 func (c *CategoryService) DeleteById(id string) *responses.Response {
-	category, err := c.categoryRepository.FindById(id)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	category := utils.PanicIfErrorWithResultReturning(c.categoryRepository.GetById(id))
 
 	if category == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Category with id %s not found", id))
 	}
 
-	err = c.categoryRepository.DeleteById(id)
-
-	if err != nil {
-		return responses.NewInternalServerErrorResponse(err.Error())
-	}
+	utils.PanicIfError(c.categoryRepository.DeleteById(id))
 
 	return responses.NewSuccessResponse(nil)
 }

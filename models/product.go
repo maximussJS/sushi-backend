@@ -28,3 +28,8 @@ func (p *ProductModel) BeforeCreate(tx *gorm.DB) (err error) {
 	p.UpdatedAt = time.Now()
 	return
 }
+
+func (p *ProductModel) BeforeUpdate(tx *gorm.DB) (err error) {
+	p.UpdatedAt = time.Now()
+	return
+}

@@ -41,7 +41,7 @@ func (r *CategoryRepository) GetAll(limit, offset int) ([]models.CategoryModel, 
 	return categories, nil
 }
 
-func (r *CategoryRepository) FindByName(name string) (*models.CategoryModel, error) {
+func (r *CategoryRepository) GetByName(name string) (*models.CategoryModel, error) {
 	var category models.CategoryModel
 
 	err := r.db.Where("name = ?", name).Preload("Products.Images").First(&category).Error
@@ -49,7 +49,7 @@ func (r *CategoryRepository) FindByName(name string) (*models.CategoryModel, err
 	return utils.HandleRecordNotFound[*models.CategoryModel](&category, err)
 }
 
-func (r *CategoryRepository) FindById(id string) (*models.CategoryModel, error) {
+func (r *CategoryRepository) GetById(id string) (*models.CategoryModel, error) {
 	var category models.CategoryModel
 	err := r.db.Clauses(clause.Returning{}).Preload("Products.Images").Where("id = ?", id).First(&category).Error
 

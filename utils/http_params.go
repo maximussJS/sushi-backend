@@ -8,7 +8,7 @@ import (
 	"sushi-backend/types/responses"
 )
 
-func GetIdParam(r *http.Request) (string, *responses.Response) {
+func GetUUIDIdParam(r *http.Request) (string, *responses.Response) {
 	id := mux.Vars(r)["id"]
 
 	if IsValidUUID(id) == false {
@@ -16,6 +16,21 @@ func GetIdParam(r *http.Request) (string, *responses.Response) {
 	}
 
 	return id, nil
+}
+
+func GetUIntIdParam(r *http.Request) (uint, *responses.Response) {
+	id := mux.Vars(r)["id"]
+
+	idInt, err := strconv.Atoi(id);
+	if err != nil {
+		return 0, responses.NewBadRequestResponse(fmt.Sprintf("Invalid id format %s. Should be integer", id))
+	}
+
+	if idInt < 0 {
+		return 0, responses.NewBadRequestResponse(fmt.Sprintf("Invalid id format %s. Should be positive integer", id))
+	}
+
+	return uint(idInt), nil
 }
 
 func GetLimitQueryParam(r *http.Request, defaultLimit int) (int, *responses.Response) {

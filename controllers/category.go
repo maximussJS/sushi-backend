@@ -50,7 +50,7 @@ func (h *CategoryController) GetAll(_ http.ResponseWriter, r *http.Request) *res
 }
 
 func (h *CategoryController) GetById(_ http.ResponseWriter, r *http.Request) *responses.Response {
-	id, err := utils.GetIdParam(r)
+	id, err := utils.GetUUIDIdParam(r)
 
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (h *CategoryController) GetById(_ http.ResponseWriter, r *http.Request) *re
 }
 
 func (h *CategoryController) UpdateById(w http.ResponseWriter, r *http.Request) *responses.Response {
-	id, err := utils.GetIdParam(r)
+	id, err := utils.GetUUIDIdParam(r)
 
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (h *CategoryController) UpdateById(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *CategoryController) DeleteById(_ http.ResponseWriter, r *http.Request) *responses.Response {
-	id, err := utils.GetIdParam(r)
+	id, err := utils.GetUUIDIdParam(r)
 
 	if err != nil {
 		return err

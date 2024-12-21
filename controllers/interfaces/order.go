@@ -6,5 +6,8 @@ import (
 )
 
 type IOrderController interface {
-	CreateOrder(w http.ResponseWriter, r *http.Request) *responses.Response
+	Create(w http.ResponseWriter, r *http.Request) *responses.Response
+	GetById(w http.ResponseWriter, r *http.Request) *responses.Response
+	GetAll(w http.ResponseWriter, r *http.Request) *responses.Response
+	DeleteById(w http.ResponseWriter, r *http.Request) *responses.Response
 }

@@ -12,10 +12,10 @@ func PanicIfErrorWithResult(_ interface{}, err error) {
 	}
 }
 
-func PanicIfErrorWithResultReturning(data interface{}, err error) (interface{}, error) {
+func PanicIfErrorWithResultReturning[T any](data T, err error) T {
 	if err != nil {
 		panic(err)
 	}
 
-	return data, nil
+	return data
 }

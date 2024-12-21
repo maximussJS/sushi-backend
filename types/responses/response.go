@@ -48,14 +48,6 @@ func NewBadRequestResponse(msg string) *Response {
 	}
 }
 
-func NewInternalServerErrorResponse(msg string) *Response {
-	return &Response{
-		Status: http.StatusInternalServerError,
-		Msg:    "Internal server error",
-		Error:  errors.New(msg),
-	}
-}
-
 func NewNotFoundResponse(msg string) *Response {
 	return &Response{
 		Status: http.StatusNotFound,

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"net"
 	"net/http"
 	"sushi-backend/config"
 	"sushi-backend/controllers/interfaces"
@@ -12,7 +11,6 @@ import (
 	"sushi-backend/pkg/rate_limit"
 	"sushi-backend/types/responses"
 	"sushi-backend/utils"
-	"time"
 )
 
 type Router struct {
@@ -40,7 +38,10 @@ func NewRouter(deps RouterDependencies) *Router {
 
 	orderRouter := r.router.PathPrefix("/api/v1/orders").Subrouter()
 
-	orderRouter.HandleFunc("", r.wrapResponse(r.orderController.CreateOrder)).Methods("POST")
+	orderRouter.HandleFunc("", r.wrapResponse(r.orderController.Create)).Methods("POST")
+	orderRouter.HandleFunc("", r.wrapResponse(r.orderController.GetAll)).Methods("GET")
+	orderRouter.HandleFunc("/{id}", r.wrapResponse(r.orderController.GetById)).Methods("GET")
+	orderRouter.HandleFunc("/{id}", r.wrapResponse(r.orderController.DeleteById)).Methods("DELETE")
 
 	r.addDefaultMiddlewares(orderRouter)
 
@@ -75,64 +76,8 @@ func NewRouter(deps RouterDependencies) *Router {
 	return r
 }
 
-func (router *Router) limitMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		clientIP := utils.GetClientIpFromContext(r.Context())
-
-		limiter := router.ipRateLimiter.GetLimiter(clientIP)
-		if !limiter.Allow() {
-			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
-func (router *Router) logMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		next.ServeHTTP(w, r)
-
-		duration := time.Since(start)
-
-		clientIP := utils.GetClientIpFromContext(r.Context())
-
-		router.logger.Log(fmt.Sprintf(
-			"[%s] %s %s %s %.0fm%.0fs%dms%dns %s",
-			start.Format(time.RFC3339),
-			r.Method,
-			r.RequestURI,
-			r.Proto,
-			duration.Minutes(),
-			duration.Seconds(),
-			duration.Milliseconds(),
-			duration.Microseconds(),
-			clientIP,
-		))
-	})
-}
-
-func (router *Router) iPMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		clientIP := r.RemoteAddr
-		if ip, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
-			clientIP = ip
-		}
-
-		next.ServeHTTP(w, r.WithContext(utils.GetContextWithClientIp(r.Context(), clientIP)))
-	})
-}
-
 func (router *Router) GetRouter() *mux.Router {
 	return router.router
-}
-
-func (router *Router) addDefaultMiddlewares(r *mux.Router) {
-	r.Use(router.iPMiddleware)
-	r.Use(router.limitMiddleware)
-	r.Use(router.logMiddleware)
 }
 
 type wrappedFn func(w http.ResponseWriter, r *http.Request) *responses.Response
@@ -151,11 +96,6 @@ func (router *Router) wrapResponse(fn wrappedFn) func(w http.ResponseWriter, r *
 		if resp.IsError() {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(resp.Status)
-
-			if resp.Status == http.StatusInternalServerError {
-				router.logger.Error(resp.Error.Error())
-			}
-
 			utils.PanicIfErrorWithResult(w.Write([]byte(fmt.Sprintf(`{"message": "%s"}`, resp.Msg))))
 			return
 		}

@@ -41,7 +41,7 @@ func (r *ProductRepository) Create(product models.ProductModel) (string, error) 
 	return product.Id, nil
 }
 
-func (r *ProductRepository) FindByName(name string) (*models.ProductModel, error) {
+func (r *ProductRepository) GetByName(name string) (*models.ProductModel, error) {
 	var product models.ProductModel
 
 	err := r.db.Where("name = ?", name).First(&product).Error
@@ -49,7 +49,7 @@ func (r *ProductRepository) FindByName(name string) (*models.ProductModel, error
 	return utils.HandleRecordNotFound[*models.ProductModel](&product, err)
 }
 
-func (r *ProductRepository) FindById(id string) (*models.ProductModel, error) {
+func (r *ProductRepository) GetById(id string) (*models.ProductModel, error) {
 	var product models.ProductModel
 	err := r.db.Clauses(clause.Returning{}).Preload("Images").Where("id = ?", id).First(&product).Error
 
@@ -62,4 +62,14 @@ func (r *ProductRepository) UpdateById(id string, product models.ProductModel) e
 
 func (r *ProductRepository) DeleteById(id string) error {
 	return r.db.Where("id = ?", id).Delete(&models.ProductModel{}).Error
+}
+
+func (r *ProductRepository) GetByIds(ids []string) ([]models.ProductModel, error) {
+	var products []models.ProductModel
+	err := r.db.Where("id IN (?)", ids).Find(&products).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
 }

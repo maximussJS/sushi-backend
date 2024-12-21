@@ -22,6 +22,8 @@ type Config struct {
 	ipRateLimitBurst               int
 	ipRateLimitExpirationInMs      int
 	ipRateLimitCleanupIntervalInMs int
+	errorStackTraceSizeInKb        int
+	maxFileSizeInMb                int
 }
 
 func NewConfig(deps ConfigDependencies) *Config {
@@ -46,6 +48,8 @@ func NewConfig(deps ConfigDependencies) *Config {
 	config.ipRateLimitBurst = config.getOptionalInt("IP_RATE_LIMIT_BURST", 20)
 	config.ipRateLimitExpirationInMs = config.getOptionalInt("IP_RATE_LIMIT_EXPIRATION_IN_MS", 360_000)
 	config.ipRateLimitCleanupIntervalInMs = config.getOptionalInt("IP_RATE_LIMIT_CLEANUP_INTERVAL_IN_MS", 360_000)
+	config.errorStackTraceSizeInKb = config.getOptionalInt("ERROR_STACK_TRACE_SIZE_IN_KB", 4)
+	config.maxFileSizeInMb = config.getOptionalInt("MAX_FILE_SIZE_IN_MB", 200)
 
 	return config
 }
@@ -92,6 +96,14 @@ func (c *Config) IpRateLimitExpiration() time.Duration {
 
 func (c *Config) IpRateLimitCleanupInterval() time.Duration {
 	return time.Duration(c.ipRateLimitCleanupIntervalInMs) * time.Millisecond
+}
+
+func (c *Config) ErrorStackTraceSizeInKb() int {
+	return c.errorStackTraceSizeInKb
+}
+
+func (c *Config) MaxFileSizeInMb() int64 {
+	return int64(c.maxFileSizeInMb)
 }
 
 func (c *Config) getRequiredString(key string) string {

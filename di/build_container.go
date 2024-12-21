@@ -23,7 +23,10 @@ func BuildContainer() *dig.Container {
 	c := dig.New()
 
 	c = AppendDependenciesToContainer(c, getRequiredDependencies())
-	c = AppendDependenciesToContainer(c, getInternalDependencies())
+	c = AppendDependenciesToContainer(c, getRepositoryDependencies())
+	c = AppendDependenciesToContainer(c, getServiceDependencies())
+	c = AppendDependenciesToContainer(c, getControllerDependencies())
+	c = AppendDependenciesToContainer(c, getRouterDependencies())
 
 	return c
 }
@@ -49,9 +52,13 @@ func mustProvideDependency(container *dig.Container, dependency Dependency) {
 	))
 }
 
-// GetInternalDependencies The list of internal dependencies that are required for the application to run.
-func getInternalDependencies() []Dependency {
+func getRepositoryDependencies() []Dependency {
 	return []Dependency{
+		{
+			Constructor: repositories.NewOrderRepository,
+			Interface:   new(repositories_interfaces.IOrderRepository),
+			Token:       "OrderRepository",
+		},
 		{
 			Constructor: repositories.NewProductImageRepository,
 			Interface:   new(repositories_interfaces.IProductImageRepository),
@@ -67,6 +74,11 @@ func getInternalDependencies() []Dependency {
 			Interface:   new(repositories_interfaces.ICategoryRepository),
 			Token:       "CategoryRepository",
 		},
+	}
+}
+
+func getServiceDependencies() []Dependency {
+	return []Dependency{
 		{
 			Constructor: services.NewProductImageService,
 			Interface:   new(services_interfaces.IProductImageService),
@@ -87,6 +99,11 @@ func getInternalDependencies() []Dependency {
 			Interface:   new(services_interfaces.IOrderService),
 			Token:       "OrderService",
 		},
+	}
+}
+
+func getControllerDependencies() []Dependency {
+	return []Dependency{
 		{
 			Constructor: controllers.NewOrderController,
 			Interface:   new(controllers_interfaces.IOrderController),
@@ -107,6 +124,11 @@ func getInternalDependencies() []Dependency {
 			Interface:   new(controllers_interfaces.IProductImageController),
 			Token:       "ProductImageController",
 		},
+	}
+}
+
+func getRouterDependencies() []Dependency {
+	return []Dependency{
 		{
 			Constructor: router.NewRouter,
 			Interface:   nil,

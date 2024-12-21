@@ -21,4 +21,7 @@ type IConfig interface {
 	IpRateLimitBurst() int
 	IpRateLimitExpiration() time.Duration
 	IpRateLimitCleanupInterval() time.Duration
+
+	ErrorStackTraceSizeInKb() int
+	MaxFileSizeInMb() int64
 }

@@ -6,9 +6,9 @@ import (
 
 type ICategoryRepository interface {
 	GetAll(limit, offset int) ([]models.CategoryModel, error)
+	GetByName(name string) (*models.CategoryModel, error)
+	GetById(id string) (*models.CategoryModel, error)
 	Create(category models.CategoryModel) (string, error)
-	FindByName(name string) (*models.CategoryModel, error)
-	FindById(id string) (*models.CategoryModel, error)
 	DeleteById(id string) error
 	UpdateById(id string, category models.CategoryModel) error
 }

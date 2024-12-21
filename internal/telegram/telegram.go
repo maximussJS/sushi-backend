@@ -22,14 +22,21 @@ func NewTelegram(deps TelegramDependencies) *Telegram {
 	}
 }
 
-func (t *Telegram) SendMessageToOrdersChannel(message string) {
+func (t *Telegram) SendMessageToChannel(chatId, message string, markdown bool) {
 	t.logger.Debug("Sending message to telegram")
 
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.config.TelegramBotToken())
 
+	parseMode := "Markdown"
+
+	if !markdown {
+		parseMode = "HTML"
+	}
+
 	body, err := json.Marshal(map[string]string{
-		"chat_id": t.config.TelegramOrdersChatId(),
-		"text":    message,
+		"chat_id":    chatId,
+		"text":       message,
+		"parse_mode": parseMode,
 	})
 
 	utils.PanicIfError(err)

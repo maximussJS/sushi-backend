@@ -1,5 +1,5 @@
 package telegram
 
 type ITelegram interface {
-	SendMessageToOrdersChannel(message string)
+	SendMessageToChannel(chatId, message string, markdown bool)
 }
