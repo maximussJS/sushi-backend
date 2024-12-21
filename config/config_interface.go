@@ -9,6 +9,7 @@ type IConfig interface {
 
 	TelegramBotToken() string
 	TelegramOrdersChatId() string
+	TelegramDeliveryChatId() string
 
 	CloudinaryUrl() string
 	CloudinaryFolder() string

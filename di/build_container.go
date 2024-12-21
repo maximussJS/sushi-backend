@@ -99,6 +99,11 @@ func getServiceDependencies() []Dependency {
 			Interface:   new(services_interfaces.IOrderService),
 			Token:       "OrderService",
 		},
+		{
+			Constructor: services.NewOrderFlowService,
+			Interface:   new(services_interfaces.IOrderFlowService),
+			Token:       "OrderFlowService",
+		},
 	}
 }
 
@@ -108,6 +113,11 @@ func getControllerDependencies() []Dependency {
 			Constructor: controllers.NewOrderController,
 			Interface:   new(controllers_interfaces.IOrderController),
 			Token:       "OrderController",
+		},
+		{
+			Constructor: controllers.NewOrderFlowController,
+			Interface:   new(controllers_interfaces.IOrderFlowController),
+			Token:       "OrderFlowController",
 		},
 		{
 			Constructor: controllers.NewCategoryController,

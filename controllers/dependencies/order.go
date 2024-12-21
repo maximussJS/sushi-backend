@@ -6,7 +6,7 @@ import (
 	"sushi-backend/services/interfaces"
 )
 
-type OrderHandlerDependencies struct {
+type OrderControllerDependencies struct {
 	dig.In
 
 	Logger       logger.ILogger           `name:"Logger"`

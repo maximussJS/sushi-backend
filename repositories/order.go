@@ -3,6 +3,7 @@ package repositories
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"sushi-backend/constants"
 	"sushi-backend/models"
 	"sushi-backend/repositories/dependencies"
 	"sushi-backend/utils"
@@ -51,4 +52,8 @@ func (r *OrderRepository) GetById(id uint) (*models.OrderModel, error) {
 
 func (r *OrderRepository) DeleteById(id uint) error {
 	return r.db.Where("id = ?", id).Delete(&models.OrderModel{}).Error
+}
+
+func (r *OrderRepository) UpdateStatusById(id uint, status constants.OrderStatus) error {
+	return r.db.Model(&models.OrderModel{}).Where("id = ?", id).Update("status", status).Error
 }

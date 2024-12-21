@@ -15,7 +15,7 @@ type OrderController struct {
 	orderService interfaces.IOrderService
 }
 
-func NewOrderController(deps dependencies.OrderHandlerDependencies) *OrderController {
+func NewOrderController(deps dependencies.OrderControllerDependencies) *OrderController {
 	return &OrderController{
 		logger:       deps.Logger,
 		orderService: deps.OrderService,

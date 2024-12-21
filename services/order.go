@@ -119,6 +119,8 @@ func (o *OrderService) constructNewOrderTelegramMessage(order *models.OrderModel
 	fullName := fmt.Sprintf("%s %s", utils.EscapeMarkdown(order.FirstName), utils.EscapeMarkdown(order.LastName))
 	sb.WriteString(fmt.Sprintf("*Fullname:* %s\n", fullName))
 
+	sb.WriteString(fmt.Sprintf("*Phone Number:* %s\n", utils.EscapeMarkdown(order.Phone)))
+
 	sb.WriteString(fmt.Sprintf("*Payment Method:* %s\n", utils.EscapeMarkdown(order.PaymentMethod)))
 
 	createdAt := order.CreatedAt.Format(time.RFC1123)

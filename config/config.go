@@ -17,6 +17,7 @@ type Config struct {
 	cloudinaryFolder               string
 	telegramBotToken               string
 	telegramOrdersChatId           string
+	telegramDeliveryChatId         string
 	runMigration                   bool
 	ipRateLimitRate                int
 	ipRateLimitBurst               int
@@ -40,6 +41,7 @@ func NewConfig(deps ConfigDependencies) *Config {
 	config.postgresDSN = config.getRequiredString("POSTGRES_DSN")
 	config.telegramBotToken = config.getRequiredString("TELEGRAM_BOT_TOKEN")
 	config.telegramOrdersChatId = config.getRequiredString("TELEGRAM_ORDERS_CHAT_ID")
+	config.telegramDeliveryChatId = config.getRequiredString("TELEGRAM_DELIVERY_CHAT_ID")
 	config.cloudinaryUrl = config.getRequiredString("CLOUDINARY_URL")
 	config.cloudinaryFolder = config.getOptionalString("CLOUDINARY_FOLDER", "sushi")
 	config.runMigration = config.getOptionalBool("RUN_MIGRATION", true)
@@ -64,6 +66,10 @@ func (c *Config) TelegramBotToken() string {
 
 func (c *Config) TelegramOrdersChatId() string {
 	return c.telegramOrdersChatId
+}
+
+func (c *Config) TelegramDeliveryChatId() string {
+	return c.telegramDeliveryChatId
 }
 
 func (c *Config) CloudinaryUrl() string {

@@ -14,6 +14,7 @@ type RouterDependencies struct {
 	Logger                 logger.ILogger                     `name:"Logger"`
 	Config                 config.IConfig                     `name:"Config"`
 	OrderController        interfaces.IOrderController        `name:"OrderController"`
+	OrderFlowController    interfaces.IOrderFlowController    `name:"OrderFlowController"`
 	CategoryController     interfaces.ICategoryController     `name:"CategoryController"`
 	ProductController      interfaces.IProductController      `name:"ProductController"`
 	ProductImageController interfaces.IProductImageController `name:"ProductImageController"`
