@@ -13,7 +13,6 @@ import (
 	"sushi-backend/types/requests"
 	"sushi-backend/types/responses"
 	"sushi-backend/utils"
-	"time"
 )
 
 type OrderService struct {
@@ -123,7 +122,7 @@ func (o *OrderService) constructNewOrderTelegramMessage(order *models.OrderModel
 
 	sb.WriteString(fmt.Sprintf("*Payment Method:* %s\n", utils.EscapeMarkdown(order.PaymentMethod)))
 
-	createdAt := order.CreatedAt.Format(time.RFC1123)
+	createdAt := order.CreatedAt.Format("2006-01-02 15:04:05")
 	sb.WriteString(fmt.Sprintf("*Created At:* %s\n", createdAt))
 
 	return sb.String()

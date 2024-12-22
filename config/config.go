@@ -5,12 +5,20 @@ import (
 	"github.com/joho/godotenv"
 	"os"
 	"strconv"
+	"strings"
+	"sushi-backend/constants"
 	"sushi-backend/internal/logger"
+	"sushi-backend/utils"
 	"time"
 )
 
 type Config struct {
 	logger                         logger.ILogger
+	appEnv                         constants.AppEnv
+	allowedOrigins                 []string
+	allowedMethods                 []string
+	allowedHeaders                 []string
+	allowCredentials               bool
 	httpPort                       string
 	postgresDSN                    string
 	cloudinaryUrl                  string
@@ -30,12 +38,21 @@ type Config struct {
 func NewConfig(deps ConfigDependencies) *Config {
 	_logger := deps.Logger
 
-	if err := godotenv.Load(); err != nil {
-		_logger.Error("No .env file found")
-	}
+	utils.PanicIfError(godotenv.Load())
 
 	config := &Config{
 		logger: _logger,
+	}
+
+	appEnv := config.getRequiredString("APP_ENV")
+
+	switch appEnv {
+	case string(constants.DevelopmentEnv):
+		config.appEnv = constants.DevelopmentEnv
+	case string(constants.ProductionEnv):
+		config.appEnv = constants.ProductionEnv
+	default:
+		panic(fmt.Sprintf("Invalid APP_ENV value: %s. Supported values: %s, %s", appEnv, constants.DevelopmentEnv, constants.ProductionEnv))
 	}
 
 	config.postgresDSN = config.getRequiredString("POSTGRES_DSN")
@@ -53,7 +70,41 @@ func NewConfig(deps ConfigDependencies) *Config {
 	config.errorStackTraceSizeInKb = config.getOptionalInt("ERROR_STACK_TRACE_SIZE_IN_KB", 4)
 	config.maxFileSizeInMb = config.getOptionalInt("MAX_FILE_SIZE_IN_MB", 200)
 
+	for _, origin := range strings.Split(config.getOptionalString("ALLOWED_ORIGINS", "*"), ",") {
+		config.allowedOrigins = append(config.allowedOrigins, origin)
+	}
+
+	for _, method := range strings.Split(config.getOptionalString("ALLOWED_METHODS", "GET,POST,PUT,DELETE"), ",") {
+		config.allowedMethods = append(config.allowedMethods, method)
+	}
+
+	for _, header := range strings.Split(config.getOptionalString("ALLOWED_HEADERS", "Content-Type,Authorization"), ",") {
+		config.allowedHeaders = append(config.allowedHeaders, header)
+	}
+
+	config.allowCredentials = config.getOptionalBool("ALLOW_CREDENTIALS", true)
+
 	return config
+}
+
+func (c *Config) AppEnv() constants.AppEnv {
+	return c.appEnv
+}
+
+func (c *Config) AllowedOrigins() []string {
+	return c.allowedOrigins
+}
+
+func (c *Config) AllowedMethods() []string {
+	return c.allowedMethods
+}
+
+func (c *Config) AllowedHeaders() []string {
+	return c.allowedHeaders
+}
+
+func (c *Config) AllowCredentials() bool {
+	return c.allowCredentials
 }
 
 func (c *Config) PostgresDSN() string {
@@ -140,10 +191,7 @@ func (c *Config) getOptionalInt(key string, defaultValue int) int {
 		return defaultValue
 	}
 
-	valueInt, err := strconv.Atoi(value)
-	if err != nil {
-		panic(err)
-	}
+	valueInt := utils.PanicIfErrorWithResultReturning(strconv.Atoi(value))
 
 	return valueInt
 }
@@ -156,10 +204,7 @@ func (c *Config) getOptionalBool(key string, defaultValue bool) bool {
 		return defaultValue
 	}
 
-	valueBool, err := strconv.ParseBool(value)
-	if err != nil {
-		panic(err)
-	}
+	valueBool := utils.PanicIfErrorWithResultReturning(strconv.ParseBool(value))
 
 	return valueBool
 }

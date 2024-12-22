@@ -19,8 +19,8 @@ type OrderModel struct {
 	Status          constants.OrderStatus `gorm:"type:varchar(50);not null;" json:"status"`
 	CreatedAt       time.Time             `json:"createdAt"`
 	UpdatedAt       time.Time             `json:"updatedAt"`
-	DeliveredAt     time.Time             `json:"deliveredAt"`
-	ProcessedAt     time.Time             `json:"processedAt"`
+	DeliveredAt     time.Time             `gorm:"type:TIMESTAMP;null;default:null" json:"deliveredAt"`
+	ProcessedAt     time.Time             `gorm:"type:TIMESTAMP;null;default:null" json:"processedAt"`
 }
 
 func (o *OrderModel) TableName() string {

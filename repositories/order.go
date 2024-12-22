@@ -6,7 +6,9 @@ import (
 	"sushi-backend/constants"
 	"sushi-backend/models"
 	"sushi-backend/repositories/dependencies"
+	"sushi-backend/types/analytic"
 	"sushi-backend/utils"
+	"time"
 )
 
 type OrderRepository struct {
@@ -54,6 +56,42 @@ func (r *OrderRepository) DeleteById(id uint) error {
 	return r.db.Where("id = ?", id).Delete(&models.OrderModel{}).Error
 }
 
-func (r *OrderRepository) UpdateStatusById(id uint, status constants.OrderStatus) error {
-	return r.db.Model(&models.OrderModel{}).Where("id = ?", id).Update("status", status).Error
+func (r *OrderRepository) UpdateById(id uint, order models.OrderModel) error {
+	return r.db.Model(&models.OrderModel{}).Where("id = ?", id).Updates(&order).Error
+}
+
+func (r *OrderRepository) GetDeliveredOrdersAnalytic(startTime time.Time) (analytic.OrderAnalytic, error) {
+	var orderAnalytic analytic.OrderAnalytic
+
+	// Perform the query
+	err := r.db.Model(&models.OrderModel{}).
+		Select("COUNT(*) as orders_count, COALESCE(SUM(price), 0) as total_amount").
+		Where("status = ? AND created_at > ?", constants.StatusDelivered, startTime).
+		Scan(&orderAnalytic).Error
+
+	if err != nil {
+		return orderAnalytic, err
+	}
+
+	return orderAnalytic, nil
+}
+
+func (r *OrderRepository) GetTopOrderedProducts(startTime time.Time, limit int) ([]analytic.TopProduct, error) {
+	var topProducts []analytic.TopProduct
+
+	query := r.db.Table("order_products").
+		Select("products.id as product_id, products.name as product_name, SUM(order_products.quantity) as total_quantity").
+		Joins("JOIN orders ON orders.id = order_products.order_id").
+		Joins("JOIN products ON products.id = order_products.product_id").
+		Where("orders.status = ? AND orders.created_at > ?", constants.StatusDelivered, startTime).
+		Group("products.id, products.name").
+		Order("total_quantity DESC").
+		Limit(limit)
+
+	err := query.Scan(&topProducts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return topProducts, nil
 }

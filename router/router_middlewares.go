@@ -80,6 +80,19 @@ func (router *Router) Recover(next http.Handler) http.Handler {
 	})
 }
 
+func (router *Router) setCacheControl(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (router *Router) noCache(handler http.HandlerFunc) http.HandlerFunc {
+	return router.setCacheControl(http.HandlerFunc(handler)).ServeHTTP
+}
+
 func (router *Router) addDefaultMiddlewares(r *mux.Router) {
 	r.Use(router.Recover)
 	r.Use(router.iPMiddleware)

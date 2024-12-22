@@ -18,5 +18,6 @@ type RouterDependencies struct {
 	CategoryController     interfaces.ICategoryController     `name:"CategoryController"`
 	ProductController      interfaces.IProductController      `name:"ProductController"`
 	ProductImageController interfaces.IProductImageController `name:"ProductImageController"`
+	AnalyticController     interfaces.IAnalyticController     `name:"AnalyticController"`
 	IPRateLimiter          rate_limit.IIpRateLimiter          `name:"IpRateLimiter"`
 }

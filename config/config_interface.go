@@ -1,10 +1,18 @@
 package config
 
 import (
+	"sushi-backend/constants"
 	"time"
 )
 
 type IConfig interface {
+	AppEnv() constants.AppEnv
+
+	AllowedOrigins() []string
+	AllowedMethods() []string
+	AllowedHeaders() []string
+	AllowCredentials() bool
+
 	HttpPort() string
 
 	TelegramBotToken() string

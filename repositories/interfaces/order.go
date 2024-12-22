@@ -1,8 +1,9 @@
 package interfaces
 
 import (
-	"sushi-backend/constants"
 	"sushi-backend/models"
+	"sushi-backend/types/analytic"
+	"time"
 )
 
 type IOrderRepository interface {
@@ -10,5 +11,7 @@ type IOrderRepository interface {
 	GetById(id uint) (*models.OrderModel, error)
 	Create(category models.OrderModel) (uint, error)
 	DeleteById(id uint) error
-	UpdateStatusById(id uint, status constants.OrderStatus) error
+	UpdateById(id uint, order models.OrderModel) error
+	GetDeliveredOrdersAnalytic(startTime time.Time) (analytic.OrderAnalytic, error)
+	GetTopOrderedProducts(startTime time.Time, limit int) ([]analytic.TopProduct, error)
 }

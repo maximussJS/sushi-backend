@@ -28,7 +28,13 @@ func (h *OrderFlowController) StartProcessing(_ http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	return h.orderFlowService.StartProcessing(id)
+	estimatedTimeInMs, err := utils.GetEstimatedTimeInMsParam(r)
+
+	if err != nil {
+		return err
+	}
+
+	return h.orderFlowService.StartProcessing(id, estimatedTimeInMs)
 }
 
 func (h *OrderFlowController) ReadyToDeliver(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -48,7 +54,13 @@ func (h *OrderFlowController) StartDelivering(_ http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	return h.orderFlowService.StartDelivering(id)
+	estimatedTimeInMs, err := utils.GetEstimatedTimeInMsParam(r)
+
+	if err != nil {
+		return err
+	}
+
+	return h.orderFlowService.StartDelivering(id, estimatedTimeInMs)
 }
 
 func (h *OrderFlowController) Delivered(_ http.ResponseWriter, r *http.Request) *responses.Response {
