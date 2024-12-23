@@ -24,6 +24,33 @@ func (router *Router) limitMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func (router *Router) authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+
+		if token == "" {
+			http.Error(w, "Authorization header is required", http.StatusUnauthorized)
+			return
+		}
+
+		clientIP := utils.GetClientIpFromContext(r.Context())
+
+		clientIpFromToken, err := router.jwtService.VerifyTokenWithClientIp(token)
+
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		if clientIP != clientIpFromToken {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (router *Router) logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -91,6 +118,10 @@ func (router *Router) setCacheControl(next http.Handler) http.Handler {
 
 func (router *Router) noCache(handler http.HandlerFunc) http.HandlerFunc {
 	return router.setCacheControl(http.HandlerFunc(handler)).ServeHTTP
+}
+
+func (router *Router) isAdmin(handler http.HandlerFunc) http.HandlerFunc {
+	return router.authMiddleware(http.HandlerFunc(handler)).ServeHTTP
 }
 
 func (router *Router) addDefaultMiddlewares(r *mux.Router) {

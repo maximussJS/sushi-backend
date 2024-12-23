@@ -15,6 +15,8 @@ import (
 type Config struct {
 	logger                         logger.ILogger
 	appEnv                         constants.AppEnv
+	jwtSecretKey                   string
+	jwtExpirationInMs              int
 	allowedOrigins                 []string
 	allowedMethods                 []string
 	allowedHeaders                 []string
@@ -33,6 +35,7 @@ type Config struct {
 	ipRateLimitCleanupIntervalInMs int
 	errorStackTraceSizeInKb        int
 	maxFileSizeInMb                int
+	adminPassword                  string
 }
 
 func NewConfig(deps ConfigDependencies) *Config {
@@ -60,6 +63,9 @@ func NewConfig(deps ConfigDependencies) *Config {
 	config.telegramOrdersChatId = config.getRequiredString("TELEGRAM_ORDERS_CHAT_ID")
 	config.telegramDeliveryChatId = config.getRequiredString("TELEGRAM_DELIVERY_CHAT_ID")
 	config.cloudinaryUrl = config.getRequiredString("CLOUDINARY_URL")
+	config.adminPassword = config.getRequiredString("ADMIN_PASSWORD")
+	config.jwtSecretKey = config.getRequiredString("JWT_SECRET_KEY")
+	config.jwtExpirationInMs = config.getOptionalInt("JWT_EXPIRATION_IN_MS", 86_400_000)
 	config.cloudinaryFolder = config.getOptionalString("CLOUDINARY_FOLDER", "sushi")
 	config.runMigration = config.getOptionalBool("RUN_MIGRATION", true)
 	config.httpPort = config.getOptionalString("HTTP_PORT", ":8080")
@@ -89,6 +95,18 @@ func NewConfig(deps ConfigDependencies) *Config {
 
 func (c *Config) AppEnv() constants.AppEnv {
 	return c.appEnv
+}
+
+func (c *Config) JWTSecretKey() []byte {
+	return []byte(c.jwtSecretKey)
+}
+
+func (c *Config) JWTExpiration() time.Duration {
+	return time.Duration(c.jwtExpirationInMs) * time.Millisecond
+}
+
+func (c *Config) AdminPassword() string {
+	return c.adminPassword
 }
 
 func (c *Config) AllowedOrigins() []string {

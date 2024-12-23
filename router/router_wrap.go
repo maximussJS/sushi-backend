@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"sushi-backend/types/responses"
 	"sushi-backend/utils"
 )
@@ -22,6 +23,12 @@ func (router *Router) wrapResponse(fn wrappedFn) func(w http.ResponseWriter, r *
 		}
 
 		if resp.Data != nil {
+			if reflect.ValueOf(resp.Data).Kind() == reflect.String {
+				w.Header().Set("Content-Type", "text/plain")
+				w.WriteHeader(resp.Status)
+				utils.PanicIfErrorWithResult(w.Write([]byte(resp.Data.(string))))
+				return
+			}
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(resp.Status)
 			utils.PanicIfError(json.NewEncoder(w).Encode(&resp.Data))

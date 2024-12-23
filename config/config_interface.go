@@ -13,6 +13,9 @@ type IConfig interface {
 	AllowedHeaders() []string
 	AllowCredentials() bool
 
+	JWTSecretKey() []byte
+	JWTExpiration() time.Duration
+
 	HttpPort() string
 
 	TelegramBotToken() string
@@ -33,4 +36,6 @@ type IConfig interface {
 
 	ErrorStackTraceSizeInKb() int
 	MaxFileSizeInMb() int64
+
+	AdminPassword() string
 }

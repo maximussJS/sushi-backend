@@ -7,10 +7,11 @@ import (
 	controllers_interfaces "sushi-backend/controllers/interfaces"
 	"sushi-backend/internal/cloudinary"
 	"sushi-backend/internal/db"
+	"sushi-backend/internal/jwt"
 	logger2 "sushi-backend/internal/logger"
+	rate_limit2 "sushi-backend/internal/rate_limit"
 	"sushi-backend/internal/telegram"
 	"sushi-backend/internal/tmp_file_storage"
-	"sushi-backend/pkg/rate_limit"
 	"sushi-backend/repositories"
 	repositories_interfaces "sushi-backend/repositories/interfaces"
 	"sushi-backend/router"
@@ -109,6 +110,11 @@ func getServiceDependencies() []Dependency {
 			Interface:   new(services_interfaces.IAnalyticService),
 			Token:       "AnalyticService",
 		},
+		{
+			Constructor: services.NewAuthService,
+			Interface:   new(services_interfaces.IAuthService),
+			Token:       "AuthService",
+		},
 	}
 }
 
@@ -144,6 +150,11 @@ func getControllerDependencies() []Dependency {
 			Interface:   new(controllers_interfaces.IAnalyticController),
 			Token:       "AnalyticController",
 		},
+		{
+			Constructor: controllers.NewAuthController,
+			Interface:   new(controllers_interfaces.IAuthController),
+			Token:       "AuthController",
+		},
 	}
 }
 
@@ -171,8 +182,8 @@ func getRequiredDependencies() []Dependency {
 			Token:       "Config",
 		},
 		{
-			Constructor: rate_limit.NewIPRateLimiter,
-			Interface:   new(rate_limit.IIpRateLimiter),
+			Constructor: rate_limit2.NewIPRateLimiter,
+			Interface:   new(rate_limit2.IIpRateLimiter),
 			Token:       "IpRateLimiter",
 		},
 		{
@@ -194,6 +205,11 @@ func getRequiredDependencies() []Dependency {
 			Constructor: db.NewDB,
 			Interface:   nil,
 			Token:       "DB",
+		},
+		{
+			Constructor: jwt.NewJwtService,
+			Interface:   new(jwt.IJwtService),
+			Token:       "JwtService",
 		},
 	}
 }

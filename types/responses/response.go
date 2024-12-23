@@ -56,6 +56,22 @@ func NewNotFoundResponse(msg string) *Response {
 	}
 }
 
+func NewForbiddenResponse() *Response {
+	return &Response{
+		Status: http.StatusForbidden,
+		Msg:    "Forbidden",
+		Error:  errors.New("forbidden"),
+	}
+}
+
+func NewUnauthorizedResponse(msg string) *Response {
+	return &Response{
+		Status: http.StatusUnauthorized,
+		Msg:    msg,
+		Error:  errors.New(msg),
+	}
+}
+
 func NewSuccessResponse(data interface{}) *Response {
 	return &Response{
 		Status: http.StatusOK,
