@@ -5,6 +5,8 @@ WORKDIR /build
 ADD go.mod .
 COPY . .
 
+COPY ./certs /build/certs
+
 RUN go build -o main cmd/main.go
 
 FROM alpine
@@ -12,5 +14,7 @@ FROM alpine
 WORKDIR /build
 
 COPY --from=builder /build/main /build/main
+COPY  --from=builder /build/certs /build/certs
 
+VOLUME /build/certs
 CMD ["/build/main"]
