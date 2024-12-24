@@ -1,20 +1,30 @@
-FROM golang:alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /build
 
-ADD go.mod .
+COPY go.mod go.sum ./
+
+RUN go mod download
+
 COPY . .
 
-COPY ./certs /build/certs
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main cmd/main.go
 
-RUN go build -o main cmd/main.go
+FROM alpine:latest
 
-FROM alpine
+WORKDIR /app
 
-WORKDIR /build
+COPY --from=builder /build/main /app/main
 
-COPY --from=builder /build/main /build/main
-COPY  --from=builder /build/certs /build/certs
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-VOLUME /build/certs
-CMD ["/build/main"]
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 8080
+
+VOLUME ["/app/certs"]
+
+
+CMD ["/app/main"]
