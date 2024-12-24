@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sushi-backend/config"
+	"sushi-backend/constants"
 	"sushi-backend/internal/logger"
 	"sushi-backend/router"
 	"time"
@@ -33,17 +34,24 @@ func StartHttpServer(deps HttpServerDependencies) {
 
 	port := server.config.HttpPort()
 
-	server.logger.Log(fmt.Sprintf("Starting http server on port %s", port))
-
 	go func() {
-		if err := http.ListenAndServe(port, server.router.GetRouter()); err != nil && err != http.ErrServerClosed {
-			server.logger.Fatal(fmt.Sprintf("Failed to start http server: %s", err))
+		if server.config.AppEnv() == constants.DevelopmentEnv {
+			server.logger.Log(fmt.Sprintf("Starting http server on port %s", port))
+
+			if err := http.ListenAndServe(port, server.router.GetRouter()); err != nil && err != http.ErrServerClosed {
+				server.logger.Fatal(fmt.Sprintf("Failed to start http server: %s", err))
+			}
+		} else {
+			server.logger.Log(fmt.Sprintf("Starting https server on port %s", port))
+			if err := http.ListenAndServeTLS(port, server.config.SSLCertPath(), server.config.SSLKeyPath(), server.router.GetRouter()); err != nil && err != http.ErrServerClosed {
+				server.logger.Fatal(fmt.Sprintf("Failed to start https server: %s", err))
+			}
 		}
 	}()
 
 	select {
 	case <-deps.ShutdownContext.Done():
-		server.logger.Log("Shutting down HTTP server gracefully...")
+		server.logger.Log("Shutting down server gracefully...")
 		shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancelShutdown()
 
@@ -53,5 +61,5 @@ func StartHttpServer(deps HttpServerDependencies) {
 		}
 	}
 
-	server.logger.Log("HTTP server stopped")
+	server.logger.Log("Server stopped")
 }

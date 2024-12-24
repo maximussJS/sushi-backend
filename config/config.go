@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"os"
 	"strconv"
 	"strings"
@@ -16,6 +17,8 @@ type Config struct {
 	appEnv                         constants.AppEnv
 	jwtSecretKey                   string
 	jwtExpirationInMs              int
+	sslCertPath                    string
+	sslKeyPath                     string
 	allowedOrigins                 []string
 	allowedMethods                 []string
 	allowedHeaders                 []string
@@ -40,6 +43,8 @@ type Config struct {
 func NewConfig(deps ConfigDependencies) *Config {
 	_logger := deps.Logger
 
+	godotenv.Load() // ignore error, because in deployment we pass all env variables via docker run command
+
 	config := &Config{
 		logger: _logger,
 	}
@@ -62,6 +67,8 @@ func NewConfig(deps ConfigDependencies) *Config {
 	config.cloudinaryUrl = config.getRequiredString("CLOUDINARY_URL")
 	config.adminPassword = config.getRequiredString("ADMIN_PASSWORD")
 	config.jwtSecretKey = config.getRequiredString("JWT_SECRET_KEY")
+	config.sslCertPath = config.getOptionalString("SSL_CERT_PATH", "./certs/cert.pem")
+	config.sslKeyPath = config.getOptionalString("SSL_KEY_PATH", "./certs/priv.pem")
 	config.jwtExpirationInMs = config.getOptionalInt("JWT_EXPIRATION_IN_MS", 86_400_000)
 	config.cloudinaryFolder = config.getOptionalString("CLOUDINARY_FOLDER", "sushi")
 	config.runMigration = config.getOptionalBool("RUN_MIGRATION", true)
@@ -100,6 +107,14 @@ func (c *Config) JWTSecretKey() []byte {
 
 func (c *Config) JWTExpiration() time.Duration {
 	return time.Duration(c.jwtExpirationInMs) * time.Millisecond
+}
+
+func (c *Config) SSLCertPath() string {
+	return c.sslCertPath
+}
+
+func (c *Config) SSLKeyPath() string {
+	return c.sslKeyPath
 }
 
 func (c *Config) AdminPassword() string {

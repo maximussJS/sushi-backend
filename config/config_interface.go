@@ -13,6 +13,9 @@ type IConfig interface {
 	AllowedHeaders() []string
 	AllowCredentials() bool
 
+	SSLCertPath() string
+	SSLKeyPath() string
+
 	JWTSecretKey() []byte
 	JWTExpiration() time.Duration
 
