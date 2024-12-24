@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"os"
 	"strconv"
 	"strings"
@@ -40,8 +39,6 @@ type Config struct {
 
 func NewConfig(deps ConfigDependencies) *Config {
 	_logger := deps.Logger
-
-	utils.PanicIfError(godotenv.Load())
 
 	config := &Config{
 		logger: _logger,
