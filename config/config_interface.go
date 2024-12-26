@@ -20,6 +20,7 @@ type IConfig interface {
 	JWTExpiration() time.Duration
 
 	HttpPort() string
+	RequestTimeout() time.Duration
 
 	TelegramBotToken() string
 	TelegramOrdersChatId() string

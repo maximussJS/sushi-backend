@@ -23,6 +23,7 @@ type Config struct {
 	allowedMethods                 []string
 	allowedHeaders                 []string
 	allowCredentials               bool
+	requestTimeoutInS              int
 	httpPort                       string
 	postgresDSN                    string
 	cloudinaryUrl                  string
@@ -73,6 +74,7 @@ func NewConfig(deps ConfigDependencies) *Config {
 	config.cloudinaryFolder = config.getOptionalString("CLOUDINARY_FOLDER", "sushi")
 	config.runMigration = config.getOptionalBool("RUN_MIGRATION", true)
 	config.httpPort = config.getOptionalString("HTTP_PORT", ":8080")
+	config.requestTimeoutInS = config.getOptionalInt("REQUEST_TIMEOUT_IN_SECONDS", 10_000)
 	config.ipRateLimitRate = config.getOptionalInt("IP_RATE_LIMIT_RATE", 60)
 	config.ipRateLimitBurst = config.getOptionalInt("IP_RATE_LIMIT_BURST", 20)
 	config.ipRateLimitExpirationInMs = config.getOptionalInt("IP_RATE_LIMIT_EXPIRATION_IN_MS", 360_000)
@@ -167,6 +169,10 @@ func (c *Config) RunMigration() bool {
 
 func (c *Config) HttpPort() string {
 	return c.httpPort
+}
+
+func (c *Config) RequestTimeout() time.Duration {
+	return time.Duration(c.requestTimeoutInS) * time.Second
 }
 
 func (c *Config) IpRateLimitRate() int {

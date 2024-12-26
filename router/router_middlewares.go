@@ -11,6 +11,14 @@ import (
 	"time"
 )
 
+func (router *Router) requestTimeoutMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		timeoutHandler := http.TimeoutHandler(next, router.config.RequestTimeout(), "Request timed out")
+
+		timeoutHandler.ServeHTTP(w, r)
+	})
+}
+
 func (router *Router) limitMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		limiter := router.ipRateLimiter.GetLimiter(utils.GetClientIpFromContext(r.Context()))
@@ -82,7 +90,7 @@ func (router *Router) iPMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (router *Router) Recover(next http.Handler) http.Handler {
+func (router *Router) recover(next http.Handler) http.Handler {
 	stackSize := router.config.ErrorStackTraceSizeInKb() << 10
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -120,7 +128,8 @@ func (router *Router) isAdmin(handler http.HandlerFunc) http.HandlerFunc {
 }
 
 func (router *Router) addDefaultMiddlewares(r *mux.Router) {
-	r.Use(router.Recover)
+	r.Use(router.requestTimeoutMiddleware)
+	r.Use(router.recover)
 	r.Use(router.iPMiddleware)
 	r.Use(router.limitMiddleware)
 	r.Use(router.logMiddleware)
