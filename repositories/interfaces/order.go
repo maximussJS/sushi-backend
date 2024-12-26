@@ -7,11 +7,11 @@ import (
 )
 
 type IOrderRepository interface {
-	GetAll(limit, offset int) ([]models.OrderModel, error)
-	GetById(id uint) (*models.OrderModel, error)
-	Create(category models.OrderModel) (uint, error)
-	DeleteById(id uint) error
-	UpdateById(id uint, order models.OrderModel) error
-	GetDeliveredOrdersAnalytic(startTime time.Time) (analytic.OrderAnalytic, error)
-	GetTopOrderedProducts(startTime time.Time, limit int) ([]analytic.TopProduct, error)
+	GetAll(limit, offset int) []models.OrderModel
+	GetById(id uint) *models.OrderModel
+	Create(category models.OrderModel) uint
+	DeleteById(id uint)
+	UpdateById(id uint, order models.OrderModel)
+	GetDeliveredOrdersAnalytic(startTime time.Time) analytic.OrderAnalytic
+	GetTopOrderedProducts(startTime time.Time, limit int) []analytic.TopProduct
 }

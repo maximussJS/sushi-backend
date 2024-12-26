@@ -4,19 +4,24 @@ import (
 	"encoding/base64"
 	"sushi-backend/config"
 	"sushi-backend/internal/jwt"
+	"sushi-backend/models"
+	"sushi-backend/repositories/interfaces"
 	dependencies "sushi-backend/services/dependecies"
 	"sushi-backend/types/responses"
+	"time"
 )
 
 type AuthService struct {
-	config     config.IConfig
-	jwtService jwt.IJwtService
+	config            config.IConfig
+	jwtService        jwt.IJwtService
+	sessionRepository interfaces.ISessionRepository
 }
 
 func NewAuthService(deps dependencies.AuthServiceDependencies) *AuthService {
 	return &AuthService{
-		config:     deps.Config,
-		jwtService: deps.JwtService,
+		config:            deps.Config,
+		jwtService:        deps.JwtService,
+		sessionRepository: deps.SessionRepository,
 	}
 }
 
@@ -30,20 +35,63 @@ func (service *AuthService) Authorize(clientIp, passwordInBase64String string) *
 		return responses.NewUnauthorizedResponse("Invalid password")
 	}
 
-	token := service.jwtService.GenerateTokenWithClientIp(clientIp)
+	exp := time.Now().Add(service.config.JWTExpiration()).Unix()
+
+	token := service.jwtService.GenerateToken(exp)
+
+	service.sessionRepository.Create(models.Session{
+		Token:     token,
+		ClientIp:  clientIp,
+		ExpiresAt: time.Unix(exp, 0),
+	})
 
 	return responses.NewSuccessResponse(token)
 }
 
 func (service *AuthService) Verify(clientIp, token string) *responses.Response {
-	clientIpFromJwt, err := service.jwtService.VerifyTokenWithClientIp(token)
+	err := service.jwtService.VerifyToken(token)
 	if err != nil {
 		return responses.NewUnauthorizedResponse(err.Error())
 	}
 
-	if clientIp != clientIpFromJwt {
+	session := service.sessionRepository.GetByToken(token)
+
+	if session == nil {
+		return responses.NewUnauthorizedResponse("Invalid token")
+	}
+
+	if session.ClientIp != clientIp {
 		return responses.NewUnauthorizedResponse("Invalid token")
 	}
 
 	return responses.NewSuccessResponse(nil)
+}
+
+func (service *AuthService) Refresh(clientIp, token string) *responses.Response {
+	err := service.jwtService.VerifyToken(token)
+	if err != nil {
+		return responses.NewUnauthorizedResponse("Invalid token: ")
+	}
+
+	session := service.sessionRepository.GetByToken(token)
+	if session == nil {
+		return responses.NewUnauthorizedResponse("Invalid session token")
+	}
+
+	if session.ClientIp != clientIp {
+		return responses.NewUnauthorizedResponse("Invalid token")
+	}
+
+	newExp := time.Now().Add(service.config.JWTExpiration()).Unix()
+	newToken := service.jwtService.GenerateToken(newExp)
+
+	newSession := models.Session{
+		Token:     newToken,
+		ClientIp:  clientIp,
+		ExpiresAt: time.Unix(newExp, 0),
+	}
+	service.sessionRepository.Create(newSession)
+	service.sessionRepository.DeleteByToken(token)
+
+	return responses.NewSuccessResponse(newToken)
 }

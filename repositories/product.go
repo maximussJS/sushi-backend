@@ -22,26 +22,19 @@ func NewProductRepository(deps dependencies.ProductRepositoryDependencies) *Prod
 	}
 }
 
-func (r *ProductRepository) GetAll(limit, offset int) ([]models.ProductModel, error) {
-	var products []models.ProductModel
-	err := r.db.Limit(limit).Offset(offset).Preload("Images").Find(&products).Error
-	if err != nil {
-		return nil, err
-	}
+func (r *ProductRepository) GetAll(limit, offset int) (products []models.ProductModel) {
+	utils.PanicIfError(r.db.Limit(limit).Offset(offset).Preload("Images").Find(&products).Error)
 
-	return products, nil
+	return
 }
 
-func (r *ProductRepository) Create(product models.ProductModel) (string, error) {
-	err := r.db.Create(&product).Error
-	if err != nil {
-		return "", err
-	}
+func (r *ProductRepository) Create(product models.ProductModel) string {
+	utils.PanicIfError(r.db.Create(&product).Error)
 
-	return product.Id, nil
+	return product.Id
 }
 
-func (r *ProductRepository) GetByName(name string) (*models.ProductModel, error) {
+func (r *ProductRepository) GetByName(name string) *models.ProductModel {
 	var product models.ProductModel
 
 	err := r.db.Where("name = ?", name).First(&product).Error
@@ -49,27 +42,23 @@ func (r *ProductRepository) GetByName(name string) (*models.ProductModel, error)
 	return utils.HandleRecordNotFound[*models.ProductModel](&product, err)
 }
 
-func (r *ProductRepository) GetById(id string) (*models.ProductModel, error) {
+func (r *ProductRepository) GetById(id string) *models.ProductModel {
 	var product models.ProductModel
 	err := r.db.Clauses(clause.Returning{}).Preload("Images").Where("id = ?", id).First(&product).Error
 
 	return utils.HandleRecordNotFound[*models.ProductModel](&product, err)
 }
 
-func (r *ProductRepository) UpdateById(id string, product models.ProductModel) error {
-	return r.db.Model(&models.ProductModel{}).Where("id = ?", id).Updates(&product).Error
+func (r *ProductRepository) UpdateById(id string, product models.ProductModel) {
+	utils.PanicIfError(r.db.Model(&models.ProductModel{}).Where("id = ?", id).Updates(&product).Error)
 }
 
-func (r *ProductRepository) DeleteById(id string) error {
-	return r.db.Where("id = ?", id).Delete(&models.ProductModel{}).Error
+func (r *ProductRepository) DeleteById(id string) {
+	utils.PanicIfError(r.db.Where("id = ?", id).Delete(&models.ProductModel{}).Error)
 }
 
-func (r *ProductRepository) GetByIds(ids []string) ([]models.ProductModel, error) {
-	var products []models.ProductModel
-	err := r.db.Where("id IN (?)", ids).Find(&products).Error
-	if err != nil {
-		return nil, err
-	}
+func (r *ProductRepository) GetByIds(ids []string) (products []models.ProductModel) {
+	utils.PanicIfError(r.db.Where("id IN (?)", ids).Find(&products).Error)
 
-	return products, nil
+	return
 }

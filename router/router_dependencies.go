@@ -4,9 +4,9 @@ import (
 	"go.uber.org/dig"
 	"sushi-backend/config"
 	"sushi-backend/controllers/interfaces"
-	"sushi-backend/internal/jwt"
 	"sushi-backend/internal/logger"
 	"sushi-backend/internal/rate_limit"
+	services_interfaces "sushi-backend/services/interfaces"
 )
 
 type RouterDependencies struct {
@@ -22,5 +22,5 @@ type RouterDependencies struct {
 	AnalyticController     interfaces.IAnalyticController     `name:"AnalyticController"`
 	AuthController         interfaces.IAuthController         `name:"AuthController"`
 	IPRateLimiter          rate_limit.IIpRateLimiter          `name:"IpRateLimiter"`
-	JwtService             jwt.IJwtService                    `name:"JwtService"`
+	AuthService            services_interfaces.IAuthService   `name:"AuthService"`
 }

@@ -75,6 +75,11 @@ func getRepositoryDependencies() []Dependency {
 			Interface:   new(repositories_interfaces.ICategoryRepository),
 			Token:       "CategoryRepository",
 		},
+		{
+			Constructor: repositories.NewSessionRepository,
+			Interface:   new(repositories_interfaces.ISessionRepository),
+			Token:       "SessionRepository",
+		},
 	}
 }
 

@@ -1,6 +1,6 @@
 package jwt
 
 type IJwtService interface {
-	GenerateTokenWithClientIp(clientIp string) string
-	VerifyTokenWithClientIp(tokenString string) (clientIP string, err error)
+	GenerateToken(exp int64) string
+	VerifyToken(tokenString string) (err error)
 }

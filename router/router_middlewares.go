@@ -1,6 +1,7 @@
 package router
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net"
@@ -12,9 +13,8 @@ import (
 
 func (router *Router) limitMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		clientIP := utils.GetClientIpFromContext(r.Context())
+		limiter := router.ipRateLimiter.GetLimiter(utils.GetClientIpFromContext(r.Context()))
 
-		limiter := router.ipRateLimiter.GetLimiter(clientIP)
 		if !limiter.Allow() {
 			http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 			return
@@ -33,17 +33,12 @@ func (router *Router) authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		clientIP := utils.GetClientIpFromContext(r.Context())
+		resp := router.authService.Verify(utils.GetClientIpFromContext(r.Context()), token)
 
-		clientIpFromToken, err := router.jwtService.VerifyTokenWithClientIp(token)
-
-		if err != nil {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-			return
-		}
-
-		if clientIP != clientIpFromToken {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+		if resp.Status != http.StatusOK {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(resp.Status)
+			utils.PanicIfError(json.NewEncoder(w).Encode(&resp.Data))
 			return
 		}
 
@@ -117,11 +112,11 @@ func (router *Router) setCacheControl(next http.Handler) http.Handler {
 }
 
 func (router *Router) noCache(handler http.HandlerFunc) http.HandlerFunc {
-	return router.setCacheControl(http.HandlerFunc(handler)).ServeHTTP
+	return router.setCacheControl(handler).ServeHTTP
 }
 
 func (router *Router) isAdmin(handler http.HandlerFunc) http.HandlerFunc {
-	return router.authMiddleware(http.HandlerFunc(handler)).ServeHTTP
+	return router.authMiddleware(handler).ServeHTTP
 }
 
 func (router *Router) addDefaultMiddlewares(r *mux.Router) {

@@ -8,4 +8,5 @@ import (
 type IAuthController interface {
 	Authorize(w http.ResponseWriter, r *http.Request) *responses.Response
 	Verify(w http.ResponseWriter, r *http.Request) *responses.Response
+	Refresh(w http.ResponseWriter, r *http.Request) *responses.Response
 }

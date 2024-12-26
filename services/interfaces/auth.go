@@ -7,4 +7,5 @@ import (
 type IAuthService interface {
 	Authorize(clientIp, passwordInBase64String string) *responses.Response
 	Verify(clientIp, token string) *responses.Response
+	Refresh(clientIp, token string) *responses.Response
 }

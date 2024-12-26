@@ -9,7 +9,6 @@ import (
 	"sushi-backend/repositories/interfaces"
 	dependencies "sushi-backend/services/dependecies"
 	"sushi-backend/types/responses"
-	"sushi-backend/utils"
 	"time"
 )
 
@@ -28,7 +27,7 @@ func NewOrderFlowService(deps dependencies.OrderFlowServiceDependencies) *OrderF
 }
 
 func (o *OrderFlowService) StartProcessing(id, estimatedTimeInMs uint) *responses.Response {
-	order := utils.PanicIfErrorWithResultReturning(o.orderRepository.GetById(id))
+	order := o.orderRepository.GetById(id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -38,9 +37,9 @@ func (o *OrderFlowService) StartProcessing(id, estimatedTimeInMs uint) *response
 		return responses.NewBadRequestResponse(fmt.Sprintf("Order with id %d is not in created status", id))
 	}
 
-	utils.PanicIfError(o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(id, models.OrderModel{
 		Status: constants.StatusInProgress,
-	}))
+	})
 
 	estimatedTime := time.Now().Add(time.Duration(estimatedTimeInMs) * time.Millisecond).Format("15:04:05")
 
@@ -52,7 +51,7 @@ func (o *OrderFlowService) StartProcessing(id, estimatedTimeInMs uint) *response
 }
 
 func (o *OrderFlowService) ReadyToDeliver(id uint) *responses.Response {
-	order := utils.PanicIfErrorWithResultReturning(o.orderRepository.GetById(id))
+	order := o.orderRepository.GetById(id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -62,10 +61,10 @@ func (o *OrderFlowService) ReadyToDeliver(id uint) *responses.Response {
 		return responses.NewBadRequestResponse(fmt.Sprintf("Order with id %d is not in processing status", id))
 	}
 
-	utils.PanicIfError(o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(id, models.OrderModel{
 		Status:      constants.StatusReadyToDelivery,
 		ProcessedAt: time.Now(),
-	}))
+	})
 
 	o.telegram.SendMessageToChannel(o.config.TelegramDeliveryChatId(), fmt.Sprintf("Order with id %d is ready to deliver", id), true)
 
@@ -73,7 +72,7 @@ func (o *OrderFlowService) ReadyToDeliver(id uint) *responses.Response {
 }
 
 func (o *OrderFlowService) StartDelivering(id, estimatedTimeInMs uint) *responses.Response {
-	order := utils.PanicIfErrorWithResultReturning(o.orderRepository.GetById(id))
+	order := o.orderRepository.GetById(id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -83,9 +82,9 @@ func (o *OrderFlowService) StartDelivering(id, estimatedTimeInMs uint) *response
 		return responses.NewBadRequestResponse(fmt.Sprintf("Order with id %d is not in ready to deliver status", id))
 	}
 
-	utils.PanicIfError(o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(id, models.OrderModel{
 		Status: constants.StatusInDelivery,
-	}))
+	})
 
 	deliveryTime := time.Now().Add(time.Duration(estimatedTimeInMs) * time.Millisecond).Format("15:04:05")
 
@@ -97,7 +96,7 @@ func (o *OrderFlowService) StartDelivering(id, estimatedTimeInMs uint) *response
 }
 
 func (o *OrderFlowService) Delivered(id uint) *responses.Response {
-	order := utils.PanicIfErrorWithResultReturning(o.orderRepository.GetById(id))
+	order := o.orderRepository.GetById(id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -107,10 +106,10 @@ func (o *OrderFlowService) Delivered(id uint) *responses.Response {
 		return responses.NewBadRequestResponse(fmt.Sprintf("Order with id %d is not in delivering status", id))
 	}
 
-	utils.PanicIfError(o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(id, models.OrderModel{
 		Status:      constants.StatusDelivered,
 		DeliveredAt: time.Now(),
-	}))
+	})
 
 	o.telegram.SendMessageToChannel(o.config.TelegramOrdersChatId(), fmt.Sprintf("Order with id %d is delivered", id), true)
 
@@ -118,15 +117,15 @@ func (o *OrderFlowService) Delivered(id uint) *responses.Response {
 }
 
 func (o *OrderFlowService) Cancel(id uint) *responses.Response {
-	order := utils.PanicIfErrorWithResultReturning(o.orderRepository.GetById(id))
+	order := o.orderRepository.GetById(id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
 	}
 
-	utils.PanicIfError(o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(id, models.OrderModel{
 		Status: constants.StatusCanceled,
-	}))
+	})
 
 	o.telegram.SendMessageToChannel(o.config.TelegramOrdersChatId(), fmt.Sprintf("Order with id %d is canceled", id), true)
 

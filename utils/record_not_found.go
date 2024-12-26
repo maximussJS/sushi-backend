@@ -5,15 +5,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func HandleRecordNotFound[T any](data T, err error) (T, error) {
+func HandleRecordNotFound[T any](data T, err error) T {
 	if err != nil {
 		var t T
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return t, nil
+			return t
 		} else {
-			return t, err
+			panic(err)
 		}
 	}
 
-	return data, nil
+	return data
 }

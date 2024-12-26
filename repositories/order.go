@@ -26,59 +26,46 @@ func NewOrderRepository(deps dependencies.OrderRepositoryDependencies) *OrderRep
 	}
 }
 
-func (r *OrderRepository) Create(order models.OrderModel) (uint, error) {
-	err := r.db.Create(&order).Error
-	if err != nil {
-		return 0, err
-	}
+func (r *OrderRepository) Create(order models.OrderModel) uint {
+	utils.PanicIfError(r.db.Create(&order).Error)
 
-	return order.Id, nil
+	return order.Id
 }
 
-func (r *OrderRepository) GetAll(limit, offset int) ([]models.OrderModel, error) {
-	var orders []models.OrderModel
-	err := r.db.Limit(limit).Offset(offset).Preload("OrderedProducts.Product").Find(&orders).Error
-	if err != nil {
-		return nil, err
-	}
+func (r *OrderRepository) GetAll(limit, offset int) (orders []models.OrderModel) {
+	utils.PanicIfError(r.db.Limit(limit).Offset(offset).Preload("OrderedProducts.Product").Find(&orders).Error)
 
-	return orders, nil
+	return
 }
 
-func (r *OrderRepository) GetById(id uint) (*models.OrderModel, error) {
+func (r *OrderRepository) GetById(id uint) *models.OrderModel {
 	var order models.OrderModel
 	err := r.db.Clauses(clause.Returning{}).Preload("OrderedProducts.Product").Where("id = ?", id).First(&order).Error
 
 	return utils.HandleRecordNotFound[*models.OrderModel](&order, err)
 }
 
-func (r *OrderRepository) DeleteById(id uint) error {
-	return r.db.Where("id = ?", id).Delete(&models.OrderModel{}).Error
+func (r *OrderRepository) DeleteById(id uint) {
+	utils.PanicIfError(r.db.Where("id = ?", id).Delete(&models.OrderModel{}).Error)
 }
 
-func (r *OrderRepository) UpdateById(id uint, order models.OrderModel) error {
-	return r.db.Model(&models.OrderModel{}).Where("id = ?", id).Updates(&order).Error
+func (r *OrderRepository) UpdateById(id uint, order models.OrderModel) {
+	utils.PanicIfError(r.db.Model(&models.OrderModel{}).Where("id = ?", id).Updates(&order).Error)
 }
 
-func (r *OrderRepository) GetDeliveredOrdersAnalytic(startTime time.Time) (analytic.OrderAnalytic, error) {
-	var orderAnalytic analytic.OrderAnalytic
+func (r *OrderRepository) GetDeliveredOrdersAnalytic(startTime time.Time) (orderAnalytic analytic.OrderAnalytic) {
+	utils.PanicIfError(
+		r.db.
+			Model(&models.OrderModel{}).
+			Select("COUNT(*) as orders_count, COALESCE(SUM(price), 0) as total_amount").
+			Where("status = ? AND created_at > ?", constants.StatusDelivered, startTime).
+			Scan(&orderAnalytic).Error,
+	)
 
-	// Perform the query
-	err := r.db.Model(&models.OrderModel{}).
-		Select("COUNT(*) as orders_count, COALESCE(SUM(price), 0) as total_amount").
-		Where("status = ? AND created_at > ?", constants.StatusDelivered, startTime).
-		Scan(&orderAnalytic).Error
-
-	if err != nil {
-		return orderAnalytic, err
-	}
-
-	return orderAnalytic, nil
+	return
 }
 
-func (r *OrderRepository) GetTopOrderedProducts(startTime time.Time, limit int) ([]analytic.TopProduct, error) {
-	var topProducts []analytic.TopProduct
-
+func (r *OrderRepository) GetTopOrderedProducts(startTime time.Time, limit int) (topProducts []analytic.TopProduct) {
 	query := r.db.Table("order_products").
 		Select("products.id as product_id, products.name as product_name, SUM(order_products.quantity) as total_quantity").
 		Joins("JOIN orders ON orders.id = order_products.order_id").
@@ -88,10 +75,7 @@ func (r *OrderRepository) GetTopOrderedProducts(startTime time.Time, limit int) 
 		Order("total_quantity DESC").
 		Limit(limit)
 
-	err := query.Scan(&topProducts).Error
-	if err != nil {
-		return nil, err
-	}
+	utils.PanicIfError(query.Scan(&topProducts).Error)
 
-	return topProducts, nil
+	return
 }

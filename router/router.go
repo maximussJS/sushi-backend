@@ -7,9 +7,9 @@ import (
 	"sushi-backend/config"
 	"sushi-backend/constants"
 	"sushi-backend/controllers/interfaces"
-	"sushi-backend/internal/jwt"
 	"sushi-backend/internal/logger"
 	"sushi-backend/internal/rate_limit"
+	services_interfaces "sushi-backend/services/interfaces"
 )
 
 type Router struct {
@@ -17,7 +17,7 @@ type Router struct {
 	logger                 logger.ILogger
 	config                 config.IConfig
 	ipRateLimiter          rate_limit.IIpRateLimiter
-	jwtService             jwt.IJwtService
+	authService            services_interfaces.IAuthService
 	orderController        interfaces.IOrderController
 	orderFlowController    interfaces.IOrderFlowController
 	categoryController     interfaces.ICategoryController
@@ -33,7 +33,7 @@ func NewRouter(deps RouterDependencies) *Router {
 		logger:                 deps.Logger,
 		config:                 deps.Config,
 		ipRateLimiter:          deps.IPRateLimiter,
-		jwtService:             deps.JwtService,
+		authService:            deps.AuthService,
 		orderController:        deps.OrderController,
 		orderFlowController:    deps.OrderFlowController,
 		categoryController:     deps.CategoryController,
@@ -49,13 +49,13 @@ func NewRouter(deps RouterDependencies) *Router {
 
 	authRouter.HandleFunc("", r.noCache(r.wrapResponse(r.authController.Authorize))).Methods("POST")
 	authRouter.HandleFunc("/verify", r.noCache(r.wrapResponse(r.authController.Verify))).Methods("POST")
+	authRouter.HandleFunc("/refresh", r.noCache(r.wrapResponse(r.authController.Refresh))).Methods("POST")
 
 	orderRouter := r.router.PathPrefix("/api/v1/orders").Subrouter()
 
 	r.addDefaultMiddlewares(orderRouter)
 
-	orderRouter.HandleFunc("",
-		r.noCache(r.isAdmin(r.wrapResponse(r.orderController.Create)))).Methods("POST")
+	orderRouter.HandleFunc("", r.noCache(r.wrapResponse(r.orderController.Create))).Methods("POST")
 
 	orderRouter.HandleFunc("", r.wrapResponse(r.orderController.GetAll)).Methods("GET")
 

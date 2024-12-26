@@ -22,22 +22,19 @@ func NewProductImageRepository(deps dependencies.ProductImageRepositoryDependenc
 	}
 }
 
-func (r *ProductImageRepository) Create(image models.ProductImageModel) (string, error) {
-	err := r.db.Create(&image).Error
-	if err != nil {
-		return "", err
-	}
+func (r *ProductImageRepository) Create(image models.ProductImageModel) string {
+	utils.PanicIfError(r.db.Create(&image).Error)
 
-	return image.Id, nil
+	return image.Id
 }
 
-func (r *ProductImageRepository) GetById(id string) (*models.ProductImageModel, error) {
+func (r *ProductImageRepository) GetById(id string) *models.ProductImageModel {
 	var image models.ProductImageModel
 	err := r.db.Clauses(clause.Returning{}).Where("id = ?", id).First(&image).Error
 
 	return utils.HandleRecordNotFound[*models.ProductImageModel](&image, err)
 }
 
-func (r *ProductImageRepository) DeleteById(id string) error {
-	return r.db.Where("id = ?", id).Delete(&models.ProductImageModel{}).Error
+func (r *ProductImageRepository) DeleteById(id string) {
+	utils.PanicIfError(r.db.Where("id = ?", id).Delete(&models.ProductImageModel{}).Error)
 }

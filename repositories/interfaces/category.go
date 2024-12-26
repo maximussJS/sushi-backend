@@ -5,10 +5,10 @@ import (
 )
 
 type ICategoryRepository interface {
-	GetAll(limit, offset int) ([]models.CategoryModel, error)
-	GetByName(name string) (*models.CategoryModel, error)
-	GetById(id string) (*models.CategoryModel, error)
-	Create(category models.CategoryModel) (string, error)
-	DeleteById(id string) error
-	UpdateById(id string, category models.CategoryModel) error
+	GetAll(limit, offset int) []models.CategoryModel
+	GetByName(name string) *models.CategoryModel
+	GetById(id string) *models.CategoryModel
+	Create(category models.CategoryModel) string
+	DeleteById(id string)
+	UpdateById(id string, category models.CategoryModel)
 }

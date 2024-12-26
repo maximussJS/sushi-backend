@@ -43,9 +43,9 @@ func (o *OrderService) Create(request requests.CreateOrderRequest) *responses.Re
 		return responses.NewBadRequestResponse(err.Error())
 	}
 
-	orderId := utils.PanicIfErrorWithResultReturning(o.orderRepository.Create(request.ToOrderModel(productsMap)))
+	orderId := o.orderRepository.Create(request.ToOrderModel(productsMap))
 
-	newOrder := utils.PanicIfErrorWithResultReturning(o.orderRepository.GetById(orderId))
+	newOrder := o.orderRepository.GetById(orderId)
 
 	msg := o.constructNewOrderTelegramMessage(newOrder)
 
@@ -55,7 +55,7 @@ func (o *OrderService) Create(request requests.CreateOrderRequest) *responses.Re
 }
 
 func (o *OrderService) GetById(id uint) *responses.Response {
-	order := utils.PanicIfErrorWithResultReturning(o.orderRepository.GetById(id))
+	order := o.orderRepository.GetById(id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -65,25 +65,25 @@ func (o *OrderService) GetById(id uint) *responses.Response {
 }
 
 func (o *OrderService) GetAll(limit, offset int) *responses.Response {
-	orders := utils.PanicIfErrorWithResultReturning(o.orderRepository.GetAll(limit, offset))
+	orders := o.orderRepository.GetAll(limit, offset)
 
 	return responses.NewSuccessResponse(orders)
 }
 
 func (o *OrderService) DeleteById(id uint) *responses.Response {
-	order := utils.PanicIfErrorWithResultReturning(o.orderRepository.GetById(id))
+	order := o.orderRepository.GetById(id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
 	}
 
-	utils.PanicIfError(o.orderRepository.DeleteById(id))
+	o.orderRepository.DeleteById(id)
 
 	return responses.NewSuccessResponse(order)
 }
 
 func (o *OrderService) getProductsMap(productsIds []string) (map[string]models.ProductModel, error) {
-	products := utils.PanicIfErrorWithResultReturning(o.productRepository.GetByIds(productsIds))
+	products := o.productRepository.GetByIds(productsIds)
 
 	productsMap := make(map[string]models.ProductModel, len(products))
 	for _, product := range products {
