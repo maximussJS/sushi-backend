@@ -1,11 +1,14 @@
 package interfaces
 
-import "sushi-backend/types/responses"
+import (
+	"context"
+	"sushi-backend/types/responses"
+)
 
 type IOrderFlowService interface {
-	StartProcessing(id, estimatedTimeInMs uint) *responses.Response
-	ReadyToDeliver(id uint) *responses.Response
-	StartDelivering(id, estimatedTimeInMs uint) *responses.Response
-	Delivered(id uint) *responses.Response
-	Cancel(id uint) *responses.Response
+	StartProcessing(ctx context.Context, id, estimatedTimeInMs uint) *responses.Response
+	ReadyToDeliver(ctx context.Context, id uint) *responses.Response
+	StartDelivering(ctx context.Context, id, estimatedTimeInMs uint) *responses.Response
+	Delivered(ctx context.Context, id uint) *responses.Response
+	Cancel(ctx context.Context, id uint) *responses.Response
 }

@@ -2,6 +2,7 @@ package http_server
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"sushi-backend/config"
@@ -12,9 +13,10 @@ import (
 )
 
 type HttpServer struct {
-	logger logger.ILogger
-	config config.IConfig
-	router *router.Router
+	logger  logger.ILogger
+	config  config.IConfig
+	router  *router.Router
+	_server http.Server
 }
 
 func (s *HttpServer) Shutdown(ctx context.Context) error {
@@ -26,24 +28,37 @@ func (s *HttpServer) Shutdown(ctx context.Context) error {
 func StartHttpServer(deps HttpServerDependencies) {
 	defer deps.ShutdownWaitGroup.Done()
 
+	tlsConfig := &tls.Config{
+		ClientAuth: tls.NoClientCert,
+		MinVersion: tls.VersionTLS11,
+	}
+
+	port := deps.Config.HttpPort()
+
 	server := &HttpServer{
 		logger: deps.Logger,
 		config: deps.Config,
 		router: deps.Router,
+		_server: http.Server{
+			Addr:         port,
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			IdleTimeout:  30 * time.Second,
+			TLSConfig:    tlsConfig,
+			Handler:      deps.Router.GetRouter(),
+		},
 	}
-
-	port := server.config.HttpPort()
 
 	go func() {
 		if server.config.AppEnv() == constants.DevelopmentEnv {
 			server.logger.Log(fmt.Sprintf("Starting http server on port %s", port))
 
-			if err := http.ListenAndServe(port, server.router.GetRouter()); err != nil && err != http.ErrServerClosed {
+			if err := server._server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				server.logger.Fatal(fmt.Sprintf("Failed to start http server: %s", err))
 			}
 		} else {
 			server.logger.Log(fmt.Sprintf("Starting https server on port %s", port))
-			if err := http.ListenAndServeTLS(port, server.config.SSLCertPath(), server.config.SSLKeyPath(), server.router.GetRouter()); err != nil && err != http.ErrServerClosed {
+			if err := server._server.ListenAndServeTLS(server.config.SSLCertPath(), server.config.SSLKeyPath()); err != nil && err != http.ErrServerClosed {
 				server.logger.Fatal(fmt.Sprintf("Failed to start https server: %s", err))
 			}
 		}

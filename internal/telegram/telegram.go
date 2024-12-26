@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -22,7 +23,7 @@ func NewTelegram(deps TelegramDependencies) *Telegram {
 	}
 }
 
-func (t *Telegram) SendMessageToChannel(chatId, message string, markdown bool) {
+func (t *Telegram) SendMessageToChannel(ctx context.Context, chatId, message string, markdown bool) {
 	t.logger.Debug("Sending message to telegram")
 
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.config.TelegramBotToken())
@@ -41,5 +42,13 @@ func (t *Telegram) SendMessageToChannel(chatId, message string, markdown bool) {
 
 	utils.PanicIfError(err)
 
-	utils.PanicIfErrorWithResult(http.Post(url, "application/json", bytes.NewBuffer(body)))
+	req := utils.PanicIfErrorWithResultReturning(http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body)))
+
+	req = req.WithContext(ctx)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := http.DefaultClient
+
+	utils.PanicIfErrorIsNotContextErrorWithResult(client.Do(req))
 }

@@ -25,7 +25,7 @@ func (controller *AuthController) Authorize(_ http.ResponseWriter, r *http.Reque
 		return responses.NewBadRequestResponse("X-Admin-Password header is required")
 	}
 
-	return controller.authService.Authorize(utils.GetClientIpFromContext(r.Context()), passwordInBase64String)
+	return controller.authService.Authorize(r.Context(), utils.GetClientIpFromContext(r.Context()), passwordInBase64String)
 }
 
 func (controller *AuthController) Verify(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -35,7 +35,7 @@ func (controller *AuthController) Verify(_ http.ResponseWriter, r *http.Request)
 		return responses.NewBadRequestResponse("Authorization header is required")
 	}
 
-	return controller.authService.Verify(utils.GetClientIpFromContext(r.Context()), token)
+	return controller.authService.Verify(r.Context(), utils.GetClientIpFromContext(r.Context()), token)
 }
 
 func (controller *AuthController) Refresh(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -45,5 +45,5 @@ func (controller *AuthController) Refresh(_ http.ResponseWriter, r *http.Request
 		return responses.NewBadRequestResponse("Authorization header is required")
 	}
 
-	return controller.authService.Refresh(utils.GetClientIpFromContext(r.Context()), token)
+	return controller.authService.Refresh(r.Context(), utils.GetClientIpFromContext(r.Context()), token)
 }

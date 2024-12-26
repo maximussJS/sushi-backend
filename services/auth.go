@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"encoding/base64"
 	"sushi-backend/config"
 	"sushi-backend/internal/jwt"
@@ -25,7 +26,7 @@ func NewAuthService(deps dependencies.AuthServiceDependencies) *AuthService {
 	}
 }
 
-func (service *AuthService) Authorize(clientIp, passwordInBase64String string) *responses.Response {
+func (service *AuthService) Authorize(ctx context.Context, clientIp, passwordInBase64String string) *responses.Response {
 	passwordString, err := base64.StdEncoding.DecodeString(passwordInBase64String)
 	if err != nil {
 		return responses.NewBadRequestResponse("Invalid password. Should be base64 encoded")
@@ -39,7 +40,7 @@ func (service *AuthService) Authorize(clientIp, passwordInBase64String string) *
 
 	token := service.jwtService.GenerateToken(exp)
 
-	service.sessionRepository.Create(models.Session{
+	service.sessionRepository.Create(ctx, models.Session{
 		Token:     token,
 		ClientIp:  clientIp,
 		ExpiresAt: time.Unix(exp, 0),
@@ -48,13 +49,13 @@ func (service *AuthService) Authorize(clientIp, passwordInBase64String string) *
 	return responses.NewSuccessResponse(token)
 }
 
-func (service *AuthService) Verify(clientIp, token string) *responses.Response {
+func (service *AuthService) Verify(ctx context.Context, clientIp, token string) *responses.Response {
 	err := service.jwtService.VerifyToken(token)
 	if err != nil {
 		return responses.NewUnauthorizedResponse(err.Error())
 	}
 
-	session := service.sessionRepository.GetByToken(token)
+	session := service.sessionRepository.GetByToken(ctx, token)
 
 	if session == nil {
 		return responses.NewUnauthorizedResponse("Invalid token")
@@ -67,13 +68,13 @@ func (service *AuthService) Verify(clientIp, token string) *responses.Response {
 	return responses.NewSuccessResponse(nil)
 }
 
-func (service *AuthService) Refresh(clientIp, token string) *responses.Response {
+func (service *AuthService) Refresh(ctx context.Context, clientIp, token string) *responses.Response {
 	err := service.jwtService.VerifyToken(token)
 	if err != nil {
 		return responses.NewUnauthorizedResponse("Invalid token: ")
 	}
 
-	session := service.sessionRepository.GetByToken(token)
+	session := service.sessionRepository.GetByToken(ctx, token)
 	if session == nil {
 		return responses.NewUnauthorizedResponse("Invalid session token")
 	}
@@ -90,8 +91,8 @@ func (service *AuthService) Refresh(clientIp, token string) *responses.Response 
 		ClientIp:  clientIp,
 		ExpiresAt: time.Unix(newExp, 0),
 	}
-	service.sessionRepository.Create(newSession)
-	service.sessionRepository.DeleteByToken(token)
+	service.sessionRepository.Create(ctx, newSession)
+	service.sessionRepository.DeleteByToken(ctx, token)
 
 	return responses.NewSuccessResponse(newToken)
 }

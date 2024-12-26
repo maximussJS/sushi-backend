@@ -25,8 +25,8 @@ func NewProductImageService(deps dependencies.ProductImageServiceDependencies) *
 	}
 }
 
-func (p *ProductImageService) GetById(id string) *responses.Response {
-	product := p.imageRepository.GetById(id)
+func (p *ProductImageService) GetById(ctx context.Context, id string) *responses.Response {
+	product := p.imageRepository.GetById(ctx, id)
 
 	if product == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Product with id %s not found", id))
@@ -35,27 +35,26 @@ func (p *ProductImageService) GetById(id string) *responses.Response {
 	return responses.NewSuccessResponse(product)
 }
 
-func (p *ProductImageService) Create(productId string, file multipart.File, header *multipart.FileHeader) *responses.Response {
-	if err := p.isValidProductId(productId); err != nil {
+func (p *ProductImageService) Create(ctx context.Context, productId string, file multipart.File, header *multipart.FileHeader) *responses.Response {
+	if err := p.isValidProductId(ctx, productId); err != nil {
 		return err
 	}
 
-	ctx := context.Background()
 	publicId, secureUrl := p.cloudinary.Upload(ctx, file, header)
 
-	imageId := p.imageRepository.Create(models.ProductImageModel{
+	imageId := p.imageRepository.Create(ctx, models.ProductImageModel{
 		ProductId:          productId,
 		CloudinaryPublicId: publicId,
 		Url:                secureUrl,
 	})
 
-	newImage := p.imageRepository.GetById(imageId)
+	newImage := p.imageRepository.GetById(ctx, imageId)
 
 	return responses.NewSuccessResponse(newImage)
 }
 
-func (p *ProductImageService) DeleteById(id string) *responses.Response {
-	image := p.imageRepository.GetById(id)
+func (p *ProductImageService) DeleteById(ctx context.Context, id string) *responses.Response {
+	image := p.imageRepository.GetById(ctx, id)
 
 	if image == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Product image with id %s not found", id))
@@ -63,13 +62,13 @@ func (p *ProductImageService) DeleteById(id string) *responses.Response {
 
 	p.cloudinary.Delete(context.Background(), image.CloudinaryPublicId)
 
-	p.imageRepository.DeleteById(id)
+	p.imageRepository.DeleteById(ctx, id)
 
 	return responses.NewSuccessResponse(nil)
 }
 
-func (p *ProductImageService) isValidProductId(productId string) *responses.Response {
-	product := p.productRepository.GetById(productId)
+func (p *ProductImageService) isValidProductId(ctx context.Context, productId string) *responses.Response {
+	product := p.productRepository.GetById(ctx, productId)
 
 	if product == nil {
 		return responses.NewBadRequestResponse(fmt.Sprintf("Product with id %s not found", productId))

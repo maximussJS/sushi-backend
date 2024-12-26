@@ -34,7 +34,7 @@ func (h *OrderFlowController) StartProcessing(_ http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	return h.orderFlowService.StartProcessing(id, estimatedTimeInMs)
+	return h.orderFlowService.StartProcessing(r.Context(), id, estimatedTimeInMs)
 }
 
 func (h *OrderFlowController) ReadyToDeliver(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -44,7 +44,7 @@ func (h *OrderFlowController) ReadyToDeliver(_ http.ResponseWriter, r *http.Requ
 		return err
 	}
 
-	return h.orderFlowService.ReadyToDeliver(id)
+	return h.orderFlowService.ReadyToDeliver(r.Context(), id)
 }
 
 func (h *OrderFlowController) StartDelivering(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -60,7 +60,7 @@ func (h *OrderFlowController) StartDelivering(_ http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	return h.orderFlowService.StartDelivering(id, estimatedTimeInMs)
+	return h.orderFlowService.StartDelivering(r.Context(), id, estimatedTimeInMs)
 }
 
 func (h *OrderFlowController) Delivered(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -70,7 +70,7 @@ func (h *OrderFlowController) Delivered(_ http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return h.orderFlowService.Delivered(id)
+	return h.orderFlowService.Delivered(r.Context(), id)
 }
 
 func (h *OrderFlowController) Cancel(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -80,5 +80,5 @@ func (h *OrderFlowController) Cancel(_ http.ResponseWriter, r *http.Request) *re
 		return err
 	}
 
-	return h.orderFlowService.Cancel(id)
+	return h.orderFlowService.Cancel(r.Context(), id)
 }

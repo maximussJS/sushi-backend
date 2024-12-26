@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"sushi-backend/models"
@@ -22,19 +23,19 @@ func NewProductImageRepository(deps dependencies.ProductImageRepositoryDependenc
 	}
 }
 
-func (r *ProductImageRepository) Create(image models.ProductImageModel) string {
-	utils.PanicIfError(r.db.Create(&image).Error)
+func (r *ProductImageRepository) Create(ctx context.Context, image models.ProductImageModel) string {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Create(&image).Error)
 
 	return image.Id
 }
 
-func (r *ProductImageRepository) GetById(id string) *models.ProductImageModel {
+func (r *ProductImageRepository) GetById(ctx context.Context, id string) *models.ProductImageModel {
 	var image models.ProductImageModel
-	err := r.db.Clauses(clause.Returning{}).Where("id = ?", id).First(&image).Error
+	err := r.db.WithContext(ctx).Clauses(clause.Returning{}).Where("id = ?", id).First(&image).Error
 
 	return utils.HandleRecordNotFound[*models.ProductImageModel](&image, err)
 }
 
-func (r *ProductImageRepository) DeleteById(id string) {
-	utils.PanicIfError(r.db.Where("id = ?", id).Delete(&models.ProductImageModel{}).Error)
+func (r *ProductImageRepository) DeleteById(ctx context.Context, id string) {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.ProductImageModel{}).Error)
 }

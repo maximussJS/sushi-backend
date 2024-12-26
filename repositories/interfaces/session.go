@@ -1,9 +1,12 @@
 package interfaces
 
-import "sushi-backend/models"
+import (
+	"context"
+	"sushi-backend/models"
+)
 
 type ISessionRepository interface {
-	Create(session models.Session) string
-	GetByToken(token string) *models.Session
-	DeleteByToken(token string)
+	Create(ctx context.Context, session models.Session) string
+	GetByToken(ctx context.Context, token string) *models.Session
+	DeleteByToken(ctx context.Context, token string)
 }

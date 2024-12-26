@@ -1,11 +1,12 @@
 package interfaces
 
 import (
+	"context"
 	"sushi-backend/types/responses"
 )
 
 type IAuthService interface {
-	Authorize(clientIp, passwordInBase64String string) *responses.Response
-	Verify(clientIp, token string) *responses.Response
-	Refresh(clientIp, token string) *responses.Response
+	Authorize(ctx context.Context, clientIp, passwordInBase64String string) *responses.Response
+	Verify(ctx context.Context, clientIp, token string) *responses.Response
+	Refresh(ctx context.Context, clientIp, token string) *responses.Response
 }

@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"sushi-backend/constants"
@@ -26,36 +27,37 @@ func NewOrderRepository(deps dependencies.OrderRepositoryDependencies) *OrderRep
 	}
 }
 
-func (r *OrderRepository) Create(order models.OrderModel) uint {
-	utils.PanicIfError(r.db.Create(&order).Error)
+func (r *OrderRepository) Create(ctx context.Context, order models.OrderModel) uint {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Create(&order).Error)
 
 	return order.Id
 }
 
-func (r *OrderRepository) GetAll(limit, offset int) (orders []models.OrderModel) {
-	utils.PanicIfError(r.db.Limit(limit).Offset(offset).Preload("OrderedProducts.Product").Find(&orders).Error)
+func (r *OrderRepository) GetAll(ctx context.Context, limit, offset int) (orders []models.OrderModel) {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Limit(limit).Offset(offset).Preload("OrderedProducts.Product").Find(&orders).Error)
 
 	return
 }
 
-func (r *OrderRepository) GetById(id uint) *models.OrderModel {
+func (r *OrderRepository) GetById(ctx context.Context, id uint) *models.OrderModel {
 	var order models.OrderModel
-	err := r.db.Clauses(clause.Returning{}).Preload("OrderedProducts.Product").Where("id = ?", id).First(&order).Error
+	err := r.db.WithContext(ctx).Clauses(clause.Returning{}).Preload("OrderedProducts.Product").Where("id = ?", id).First(&order).Error
 
 	return utils.HandleRecordNotFound[*models.OrderModel](&order, err)
 }
 
-func (r *OrderRepository) DeleteById(id uint) {
-	utils.PanicIfError(r.db.Where("id = ?", id).Delete(&models.OrderModel{}).Error)
+func (r *OrderRepository) DeleteById(ctx context.Context, id uint) {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.OrderModel{}).Error)
 }
 
-func (r *OrderRepository) UpdateById(id uint, order models.OrderModel) {
-	utils.PanicIfError(r.db.Model(&models.OrderModel{}).Where("id = ?", id).Updates(&order).Error)
+func (r *OrderRepository) UpdateById(ctx context.Context, id uint, order models.OrderModel) {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Model(&models.OrderModel{}).Where("id = ?", id).Updates(&order).Error)
 }
 
-func (r *OrderRepository) GetDeliveredOrdersAnalytic(startTime time.Time) (orderAnalytic analytic.OrderAnalytic) {
-	utils.PanicIfError(
+func (r *OrderRepository) GetDeliveredOrdersAnalytic(ctx context.Context, startTime time.Time) (orderAnalytic analytic.OrderAnalytic) {
+	utils.PanicIfErrorIsNotContextError(
 		r.db.
+			WithContext(ctx).
 			Model(&models.OrderModel{}).
 			Select("COUNT(*) as orders_count, COALESCE(SUM(price), 0) as total_amount").
 			Where("status = ? AND created_at > ?", constants.StatusDelivered, startTime).
@@ -65,8 +67,10 @@ func (r *OrderRepository) GetDeliveredOrdersAnalytic(startTime time.Time) (order
 	return
 }
 
-func (r *OrderRepository) GetTopOrderedProducts(startTime time.Time, limit int) (topProducts []analytic.TopProduct) {
-	query := r.db.Table("order_products").
+func (r *OrderRepository) GetTopOrderedProducts(ctx context.Context, startTime time.Time, limit int) (topProducts []analytic.TopProduct) {
+	query := r.db.
+		WithContext(ctx).
+		Table("order_products").
 		Select("products.id as product_id, products.name as product_name, SUM(order_products.quantity) as total_quantity").
 		Joins("JOIN orders ON orders.id = order_products.order_id").
 		Joins("JOIN products ON products.id = order_products.product_id").
@@ -75,7 +79,7 @@ func (r *OrderRepository) GetTopOrderedProducts(startTime time.Time, limit int) 
 		Order("total_quantity DESC").
 		Limit(limit)
 
-	utils.PanicIfError(query.Scan(&topProducts).Error)
+	utils.PanicIfErrorIsNotContextError(query.Scan(&topProducts).Error)
 
 	return
 }

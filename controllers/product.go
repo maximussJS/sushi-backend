@@ -30,7 +30,7 @@ func (h *ProductController) Create(w http.ResponseWriter, r *http.Request) *resp
 		return err
 	}
 
-	return h.productService.Create(req)
+	return h.productService.Create(r.Context(), req)
 }
 
 func (h *ProductController) GetAll(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -46,7 +46,7 @@ func (h *ProductController) GetAll(_ http.ResponseWriter, r *http.Request) *resp
 		return err
 	}
 
-	return h.productService.GetAll(limit, offset)
+	return h.productService.GetAll(r.Context(), limit, offset)
 }
 
 func (h *ProductController) GetById(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -56,7 +56,7 @@ func (h *ProductController) GetById(_ http.ResponseWriter, r *http.Request) *res
 		return err
 	}
 
-	return h.productService.GetById(id)
+	return h.productService.GetById(r.Context(), id)
 }
 
 func (h *ProductController) UpdateById(w http.ResponseWriter, r *http.Request) *responses.Response {
@@ -72,7 +72,7 @@ func (h *ProductController) UpdateById(w http.ResponseWriter, r *http.Request) *
 		return err
 	}
 
-	return h.productService.UpdateById(id, req)
+	return h.productService.UpdateById(r.Context(), id, req)
 }
 
 func (h *ProductController) DeleteById(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -82,5 +82,5 @@ func (h *ProductController) DeleteById(_ http.ResponseWriter, r *http.Request) *
 		return err
 	}
 
-	return h.productService.DeleteById(id)
+	return h.productService.DeleteById(r.Context(), id)
 }

@@ -1,9 +1,12 @@
 package interfaces
 
-import "sushi-backend/models"
+import (
+	"context"
+	"sushi-backend/models"
+)
 
 type IProductImageRepository interface {
-	Create(category models.ProductImageModel) string
-	GetById(id string) *models.ProductImageModel
-	DeleteById(id string)
+	Create(ctx context.Context, category models.ProductImageModel) string
+	GetById(ctx context.Context, id string) *models.ProductImageModel
+	DeleteById(ctx context.Context, id string)
 }

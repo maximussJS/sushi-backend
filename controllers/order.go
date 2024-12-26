@@ -30,7 +30,7 @@ func (h *OrderController) Create(w http.ResponseWriter, r *http.Request) *respon
 		return err
 	}
 
-	return h.orderService.Create(req)
+	return h.orderService.Create(r.Context(), req)
 }
 
 func (h *OrderController) GetById(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -40,7 +40,7 @@ func (h *OrderController) GetById(_ http.ResponseWriter, r *http.Request) *respo
 		return err
 	}
 
-	return h.orderService.GetById(id)
+	return h.orderService.GetById(r.Context(), id)
 }
 
 func (h *OrderController) GetAll(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -56,7 +56,7 @@ func (h *OrderController) GetAll(_ http.ResponseWriter, r *http.Request) *respon
 		return err
 	}
 
-	return h.orderService.GetAll(limit, offset)
+	return h.orderService.GetAll(r.Context(), limit, offset)
 }
 
 func (h *OrderController) DeleteById(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -66,5 +66,5 @@ func (h *OrderController) DeleteById(_ http.ResponseWriter, r *http.Request) *re
 		return err
 	}
 
-	return h.orderService.DeleteById(id)
+	return h.orderService.DeleteById(r.Context(), id)
 }

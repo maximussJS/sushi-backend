@@ -39,7 +39,7 @@ func (h *ProductImageController) Create(_ http.ResponseWriter, r *http.Request) 
 		return responses.NewBadRequestResponse("form file is required")
 	}
 
-	return h.productImageService.Create(id, file, handler)
+	return h.productImageService.Create(r.Context(), id, file, handler)
 }
 
 func (h *ProductImageController) GetById(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -49,7 +49,7 @@ func (h *ProductImageController) GetById(_ http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	return h.productImageService.GetById(id)
+	return h.productImageService.GetById(r.Context(), id)
 }
 
 func (h *ProductImageController) DeleteById(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -59,5 +59,5 @@ func (h *ProductImageController) DeleteById(_ http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	return h.productImageService.DeleteById(id)
+	return h.productImageService.DeleteById(r.Context(), id)
 }

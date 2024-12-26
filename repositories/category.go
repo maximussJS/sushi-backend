@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"sushi-backend/models"
@@ -22,36 +23,36 @@ func NewCategoryRepository(deps dependencies.CategoryRepositoryDependencies) *Ca
 	}
 }
 
-func (r *CategoryRepository) Create(category models.CategoryModel) string {
-	utils.PanicIfError(r.db.Create(&category).Error)
+func (r *CategoryRepository) Create(ctx context.Context, category models.CategoryModel) string {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Create(&category).Error)
 
 	return category.Id
 }
 
-func (r *CategoryRepository) GetAll(limit, offset int) (categories []models.CategoryModel) {
-	utils.PanicIfError(r.db.Limit(limit).Offset(offset).Preload("Products.Images").Find(&categories).Error)
+func (r *CategoryRepository) GetAll(ctx context.Context, limit, offset int) (categories []models.CategoryModel) {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Limit(limit).Offset(offset).Preload("Products.Images").Find(&categories).Error)
 	return
 }
 
-func (r *CategoryRepository) GetByName(name string) *models.CategoryModel {
+func (r *CategoryRepository) GetByName(ctx context.Context, name string) *models.CategoryModel {
 	var category models.CategoryModel
 
-	err := r.db.Where("name = ?", name).Preload("Products.Images").First(&category).Error
+	err := r.db.WithContext(ctx).Where("name = ?", name).Preload("Products.Images").First(&category).Error
 
 	return utils.HandleRecordNotFound[*models.CategoryModel](&category, err)
 }
 
-func (r *CategoryRepository) GetById(id string) *models.CategoryModel {
+func (r *CategoryRepository) GetById(ctx context.Context, id string) *models.CategoryModel {
 	var category models.CategoryModel
-	err := r.db.Clauses(clause.Returning{}).Preload("Products.Images").Where("id = ?", id).First(&category).Error
+	err := r.db.WithContext(ctx).Clauses(clause.Returning{}).Preload("Products.Images").Where("id = ?", id).First(&category).Error
 
 	return utils.HandleRecordNotFound[*models.CategoryModel](&category, err)
 }
 
-func (r *CategoryRepository) UpdateById(id string, category models.CategoryModel) {
-	utils.PanicIfError(r.db.Model(&models.CategoryModel{}).Where("id = ?", id).Updates(&category).Error)
+func (r *CategoryRepository) UpdateById(ctx context.Context, id string, category models.CategoryModel) {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Model(&models.CategoryModel{}).Where("id = ?", id).Updates(&category).Error)
 }
 
-func (r *CategoryRepository) DeleteById(id string) {
-	utils.PanicIfError(r.db.Where("id = ?", id).Delete(&models.CategoryModel{}).Error)
+func (r *CategoryRepository) DeleteById(ctx context.Context, id string) {
+	utils.PanicIfErrorIsNotContextError(r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.CategoryModel{}).Error)
 }

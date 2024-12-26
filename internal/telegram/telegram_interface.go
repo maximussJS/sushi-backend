@@ -1,5 +1,7 @@
 package telegram
 
+import "context"
+
 type ITelegram interface {
-	SendMessageToChannel(chatId, message string, markdown bool)
+	SendMessageToChannel(ctx context.Context, chatId, message string, markdown bool)
 }

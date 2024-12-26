@@ -28,7 +28,7 @@ func (h *AnalyticController) GetOrdersAnalytic(_ http.ResponseWriter, r *http.Re
 		return err
 	}
 
-	return h.analyticService.GetOrdersAnalytic(startTimeInMs)
+	return h.analyticService.GetOrdersAnalytic(r.Context(), startTimeInMs)
 }
 
 func (h *AnalyticController) GetTopOrderedProducts(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -44,5 +44,5 @@ func (h *AnalyticController) GetTopOrderedProducts(_ http.ResponseWriter, r *htt
 		return err
 	}
 
-	return h.analyticService.GetTopOrderedProducts(startTimeInMs, limit)
+	return h.analyticService.GetTopOrderedProducts(r.Context(), startTimeInMs, limit)
 }

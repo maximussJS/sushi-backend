@@ -41,7 +41,7 @@ func (router *Router) authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		resp := router.authService.Verify(utils.GetClientIpFromContext(r.Context()), token)
+		resp := router.authService.Verify(r.Context(), utils.GetClientIpFromContext(r.Context()), token)
 
 		if resp.Status != http.StatusOK {
 			w.Header().Set("Content-Type", "application/json")

@@ -74,7 +74,7 @@ func NewConfig(deps ConfigDependencies) *Config {
 	config.cloudinaryFolder = config.getOptionalString("CLOUDINARY_FOLDER", "sushi")
 	config.runMigration = config.getOptionalBool("RUN_MIGRATION", true)
 	config.httpPort = config.getOptionalString("HTTP_PORT", ":8080")
-	config.requestTimeoutInS = config.getOptionalInt("REQUEST_TIMEOUT_IN_SECONDS", 10_000)
+	config.requestTimeoutInS = config.getOptionalInt("REQUEST_TIMEOUT_IN_SECONDS", 10)
 	config.ipRateLimitRate = config.getOptionalInt("IP_RATE_LIMIT_RATE", 60)
 	config.ipRateLimitBurst = config.getOptionalInt("IP_RATE_LIMIT_BURST", 20)
 	config.ipRateLimitExpirationInMs = config.getOptionalInt("IP_RATE_LIMIT_EXPIRATION_IN_MS", 360_000)

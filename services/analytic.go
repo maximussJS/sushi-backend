@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"sushi-backend/repositories/interfaces"
 	dependencies "sushi-backend/services/dependecies"
 	"sushi-backend/types/responses"
@@ -17,28 +18,28 @@ func NewAnalyticService(deps dependencies.AnalyticServiceDependencies) *Analytic
 	}
 }
 
-func (service *AnalyticService) GetOrdersAnalytic(startTimeInMs uint) *responses.Response {
+func (service *AnalyticService) GetOrdersAnalytic(ctx context.Context, startTimeInMs uint) *responses.Response {
 	startTime, err := service.getStartTime(startTimeInMs)
 
 	if err != nil {
 		return err
 	}
 
-	orderAnalytic := service.orderRepository.GetDeliveredOrdersAnalytic(startTime)
+	orderAnalytic := service.orderRepository.GetDeliveredOrdersAnalytic(ctx, startTime)
 
 	orderAnalytic.StartTime = startTime.Format("2006-01-02 15:04:05")
 
 	return responses.NewSuccessResponse(orderAnalytic)
 }
 
-func (service *AnalyticService) GetTopOrderedProducts(startTimeInMs uint, limit int) *responses.Response {
+func (service *AnalyticService) GetTopOrderedProducts(ctx context.Context, startTimeInMs uint, limit int) *responses.Response {
 	startTime, err := service.getStartTime(startTimeInMs)
 
 	if err != nil {
 		return err
 	}
 
-	topOrderedProducts := service.orderRepository.GetTopOrderedProducts(startTime, limit)
+	topOrderedProducts := service.orderRepository.GetTopOrderedProducts(ctx, startTime, limit)
 
 	for i := range topOrderedProducts {
 		topOrderedProducts[i].StartTime = startTime.Format("2006-01-02 15:04:05")

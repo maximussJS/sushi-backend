@@ -15,6 +15,10 @@ func (router *Router) wrapResponse(fn wrappedFn) func(w http.ResponseWriter, r *
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp := fn(w, r)
 
+		if ch := r.Context().Err(); ch != nil {
+			return
+		}
+
 		if resp.IsError() {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(resp.Status)

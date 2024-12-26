@@ -30,7 +30,7 @@ func (h *CategoryController) Create(w http.ResponseWriter, r *http.Request) *res
 		return err
 	}
 
-	return h.categoryService.Create(req)
+	return h.categoryService.Create(r.Context(), req)
 }
 
 func (h *CategoryController) GetAll(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -46,7 +46,7 @@ func (h *CategoryController) GetAll(_ http.ResponseWriter, r *http.Request) *res
 		return err
 	}
 
-	return h.categoryService.GetAll(limit, offset)
+	return h.categoryService.GetAll(r.Context(), limit, offset)
 }
 
 func (h *CategoryController) GetById(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -56,7 +56,7 @@ func (h *CategoryController) GetById(_ http.ResponseWriter, r *http.Request) *re
 		return err
 	}
 
-	return h.categoryService.GetById(id)
+	return h.categoryService.GetById(r.Context(), id)
 }
 
 func (h *CategoryController) UpdateById(w http.ResponseWriter, r *http.Request) *responses.Response {
@@ -72,7 +72,7 @@ func (h *CategoryController) UpdateById(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return h.categoryService.UpdateById(id, req)
+	return h.categoryService.UpdateById(r.Context(), id, req)
 }
 
 func (h *CategoryController) DeleteById(_ http.ResponseWriter, r *http.Request) *responses.Response {
@@ -82,5 +82,5 @@ func (h *CategoryController) DeleteById(_ http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return h.categoryService.DeleteById(id)
+	return h.categoryService.DeleteById(r.Context(), id)
 }

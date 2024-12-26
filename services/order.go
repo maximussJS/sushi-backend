@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -31,31 +32,31 @@ func NewOrderService(deps dependencies.OrderServiceDependencies) *OrderService {
 	}
 }
 
-func (o *OrderService) Create(request requests.CreateOrderRequest) *responses.Response {
+func (o *OrderService) Create(ctx context.Context, request requests.CreateOrderRequest) *responses.Response {
 	productIds := make([]string, len(request.OrderedProducts))
 
 	for i, orderedProduct := range request.OrderedProducts {
 		productIds[i] = orderedProduct.ProductId
 	}
 
-	productsMap, err := o.getProductsMap(productIds)
+	productsMap, err := o.getProductsMap(ctx, productIds)
 	if err != nil {
 		return responses.NewBadRequestResponse(err.Error())
 	}
 
-	orderId := o.orderRepository.Create(request.ToOrderModel(productsMap))
+	orderId := o.orderRepository.Create(ctx, request.ToOrderModel(productsMap))
 
-	newOrder := o.orderRepository.GetById(orderId)
+	newOrder := o.orderRepository.GetById(ctx, orderId)
 
 	msg := o.constructNewOrderTelegramMessage(newOrder)
 
-	o.telegram.SendMessageToChannel(o.config.TelegramOrdersChatId(), msg, true)
+	o.telegram.SendMessageToChannel(ctx, o.config.TelegramOrdersChatId(), msg, true)
 
 	return responses.NewSuccessResponse(newOrder)
 }
 
-func (o *OrderService) GetById(id uint) *responses.Response {
-	order := o.orderRepository.GetById(id)
+func (o *OrderService) GetById(ctx context.Context, id uint) *responses.Response {
+	order := o.orderRepository.GetById(ctx, id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -64,26 +65,26 @@ func (o *OrderService) GetById(id uint) *responses.Response {
 	return responses.NewSuccessResponse(order)
 }
 
-func (o *OrderService) GetAll(limit, offset int) *responses.Response {
-	orders := o.orderRepository.GetAll(limit, offset)
+func (o *OrderService) GetAll(ctx context.Context, limit, offset int) *responses.Response {
+	orders := o.orderRepository.GetAll(ctx, limit, offset)
 
 	return responses.NewSuccessResponse(orders)
 }
 
-func (o *OrderService) DeleteById(id uint) *responses.Response {
-	order := o.orderRepository.GetById(id)
+func (o *OrderService) DeleteById(ctx context.Context, id uint) *responses.Response {
+	order := o.orderRepository.GetById(ctx, id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
 	}
 
-	o.orderRepository.DeleteById(id)
+	o.orderRepository.DeleteById(ctx, id)
 
 	return responses.NewSuccessResponse(order)
 }
 
-func (o *OrderService) getProductsMap(productsIds []string) (map[string]models.ProductModel, error) {
-	products := o.productRepository.GetByIds(productsIds)
+func (o *OrderService) getProductsMap(ctx context.Context, productsIds []string) (map[string]models.ProductModel, error) {
+	products := o.productRepository.GetByIds(ctx, productsIds)
 
 	productsMap := make(map[string]models.ProductModel, len(products))
 	for _, product := range products {

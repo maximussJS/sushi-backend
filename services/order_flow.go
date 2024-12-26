@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"sushi-backend/config"
 	"sushi-backend/constants"
@@ -26,8 +27,8 @@ func NewOrderFlowService(deps dependencies.OrderFlowServiceDependencies) *OrderF
 	}
 }
 
-func (o *OrderFlowService) StartProcessing(id, estimatedTimeInMs uint) *responses.Response {
-	order := o.orderRepository.GetById(id)
+func (o *OrderFlowService) StartProcessing(ctx context.Context, id, estimatedTimeInMs uint) *responses.Response {
+	order := o.orderRepository.GetById(ctx, id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -37,7 +38,7 @@ func (o *OrderFlowService) StartProcessing(id, estimatedTimeInMs uint) *response
 		return responses.NewBadRequestResponse(fmt.Sprintf("Order with id %d is not in created status", id))
 	}
 
-	o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(ctx, id, models.OrderModel{
 		Status: constants.StatusInProgress,
 	})
 
@@ -45,13 +46,13 @@ func (o *OrderFlowService) StartProcessing(id, estimatedTimeInMs uint) *response
 
 	msg := fmt.Sprintf("Order with id %d is processing. Please be ready to take the order at %s", id, estimatedTime)
 
-	o.telegram.SendMessageToChannel(o.config.TelegramDeliveryChatId(), msg, true)
+	o.telegram.SendMessageToChannel(ctx, o.config.TelegramDeliveryChatId(), msg, true)
 
 	return responses.NewSuccessResponse(nil)
 }
 
-func (o *OrderFlowService) ReadyToDeliver(id uint) *responses.Response {
-	order := o.orderRepository.GetById(id)
+func (o *OrderFlowService) ReadyToDeliver(ctx context.Context, id uint) *responses.Response {
+	order := o.orderRepository.GetById(ctx, id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -61,18 +62,18 @@ func (o *OrderFlowService) ReadyToDeliver(id uint) *responses.Response {
 		return responses.NewBadRequestResponse(fmt.Sprintf("Order with id %d is not in processing status", id))
 	}
 
-	o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(ctx, id, models.OrderModel{
 		Status:      constants.StatusReadyToDelivery,
 		ProcessedAt: time.Now(),
 	})
 
-	o.telegram.SendMessageToChannel(o.config.TelegramDeliveryChatId(), fmt.Sprintf("Order with id %d is ready to deliver", id), true)
+	o.telegram.SendMessageToChannel(ctx, o.config.TelegramDeliveryChatId(), fmt.Sprintf("Order with id %d is ready to deliver", id), true)
 
 	return responses.NewSuccessResponse(nil)
 }
 
-func (o *OrderFlowService) StartDelivering(id, estimatedTimeInMs uint) *responses.Response {
-	order := o.orderRepository.GetById(id)
+func (o *OrderFlowService) StartDelivering(ctx context.Context, id, estimatedTimeInMs uint) *responses.Response {
+	order := o.orderRepository.GetById(ctx, id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -82,7 +83,7 @@ func (o *OrderFlowService) StartDelivering(id, estimatedTimeInMs uint) *response
 		return responses.NewBadRequestResponse(fmt.Sprintf("Order with id %d is not in ready to deliver status", id))
 	}
 
-	o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(ctx, id, models.OrderModel{
 		Status: constants.StatusInDelivery,
 	})
 
@@ -90,13 +91,13 @@ func (o *OrderFlowService) StartDelivering(id, estimatedTimeInMs uint) *response
 
 	msg := fmt.Sprintf("Order with id %d is delivering. Approximately delivery time  %s", id, deliveryTime)
 
-	o.telegram.SendMessageToChannel(o.config.TelegramDeliveryChatId(), msg, true)
+	o.telegram.SendMessageToChannel(ctx, o.config.TelegramDeliveryChatId(), msg, true)
 
 	return responses.NewSuccessResponse(nil)
 }
 
-func (o *OrderFlowService) Delivered(id uint) *responses.Response {
-	order := o.orderRepository.GetById(id)
+func (o *OrderFlowService) Delivered(ctx context.Context, id uint) *responses.Response {
+	order := o.orderRepository.GetById(ctx, id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
@@ -106,28 +107,28 @@ func (o *OrderFlowService) Delivered(id uint) *responses.Response {
 		return responses.NewBadRequestResponse(fmt.Sprintf("Order with id %d is not in delivering status", id))
 	}
 
-	o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(ctx, id, models.OrderModel{
 		Status:      constants.StatusDelivered,
 		DeliveredAt: time.Now(),
 	})
 
-	o.telegram.SendMessageToChannel(o.config.TelegramOrdersChatId(), fmt.Sprintf("Order with id %d is delivered", id), true)
+	o.telegram.SendMessageToChannel(ctx, o.config.TelegramOrdersChatId(), fmt.Sprintf("Order with id %d is delivered", id), true)
 
 	return responses.NewSuccessResponse(nil)
 }
 
-func (o *OrderFlowService) Cancel(id uint) *responses.Response {
-	order := o.orderRepository.GetById(id)
+func (o *OrderFlowService) Cancel(ctx context.Context, id uint) *responses.Response {
+	order := o.orderRepository.GetById(ctx, id)
 
 	if order == nil {
 		return responses.NewNotFoundResponse(fmt.Sprintf("Order with id %d not found", id))
 	}
 
-	o.orderRepository.UpdateById(id, models.OrderModel{
+	o.orderRepository.UpdateById(ctx, id, models.OrderModel{
 		Status: constants.StatusCanceled,
 	})
 
-	o.telegram.SendMessageToChannel(o.config.TelegramOrdersChatId(), fmt.Sprintf("Order with id %d is canceled", id), true)
+	o.telegram.SendMessageToChannel(ctx, o.config.TelegramOrdersChatId(), fmt.Sprintf("Order with id %d is canceled", id), true)
 
 	return responses.NewSuccessResponse(nil)
 }
